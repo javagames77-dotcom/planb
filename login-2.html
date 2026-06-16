@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan B — Вхід</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E03C2F;
+  --red-dim: rgba(224,60,47,.10);
+  --red-border: rgba(224,60,47,.30);
+  --green: #16A34A;
+  --green-dim: rgba(22,163,74,.10);
+  --green-border: rgba(22,163,74,.25);
+  --bg0: #F0F0F3;
+  --bg1: #FFFFFF;
+  --bg2: #F5F5F8;
+  --bg3: #EBEBEF;
+  --border: rgba(0,0,0,.08);
+  --text: #111114;
+  --muted: #6B6B78;
+  --muted2: #ABABB8;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+[data-theme="dark"] {
+  --bg0: #0C0C0F;
+  --bg1: #141417;
+  --bg2: #1C1C21;
+  --bg3: #242429;
+  --border: rgba(255,255,255,.07);
+  --text: #F0F0F2;
+  --muted: #8A8A96;
+  --muted2: #52525C;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%}
+body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--text);font-size:13px;line-height:1.5;-webkit-font-smoothing:antialiased;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:100vh;padding:16px;transition:background .2s,color .2s}
+
+/* top bar */
+.top-bar{position:fixed;top:16px;right:16px;display:flex;align-items:center;gap:8px}
+
+/* lang switcher */
+.lang-bar{display:flex;background:var(--bg1);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.lang-btn{padding:5px 10px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;transition:all .15s}
+.lang-btn.active{background:var(--red);color:#fff}
+
+/* theme toggle */
+.theme-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg1);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .15s}
+.theme-btn:hover{color:var(--text)}
+.theme-btn svg{width:14px;height:14px;fill:currentColor}
+
+.wrap{width:100%;max-width:400px}
+
+/* logo */
+.logo{display:flex;align-items:center;justify-content:center;margin-bottom:28px}
+.logo-text{font-family:var(--font-mono);font-weight:700;font-size:24px;color:var(--text);letter-spacing:-.03em}
+
+/* mic icon */
+.logo-mic{display:flex;align-items:center;justify-content:center;margin:0 4px;position:relative;top:1px}
+
+/* card */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:16px;padding:28px;margin-bottom:14px;box-shadow:0 2px 16px rgba(0,0,0,.06);transition:background .2s,border-color .2s}
+
+/* tabs */
+.tabs{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:22px}
+.tab{flex:1;padding:8px;font-size:12px;font-weight:500;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;transition:all .15s;text-align:center}
+.tab.active{background:var(--bg1);color:var(--text);font-weight:600;box-shadow:0 1px 4px rgba(0,0,0,.08)}
+
+/* form */
+.form{display:flex;flex-direction:column;gap:14px}
+.field-group{display:flex;flex-direction:column;gap:5px}
+.field-label{font-size:11px;font-weight:600;color:var(--muted);letter-spacing:.03em;text-transform:uppercase}
+.field-input{background:var(--bg2);border:1px solid var(--border);border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s;width:100%}
+.field-input:focus{border-color:var(--red-border);box-shadow:0 0 0 3px var(--red-dim)}
+.field-input::placeholder{color:var(--muted2)}
+
+/* messages */
+.error-msg{font-size:12px;color:var(--red);background:var(--red-dim);border:1px solid var(--red-border);border-radius:8px;padding:9px 12px;display:none;margin-bottom:4px}
+.error-msg.show{display:block}
+.success-msg{font-size:12px;color:var(--green);background:var(--green-dim);border:1px solid var(--green-border);border-radius:8px;padding:9px 12px;display:none;margin-bottom:4px}
+.success-msg.show{display:block}
+
+/* btn */
+.btn-primary{background:var(--red);color:#fff;border:none;border-radius:8px;padding:11px 16px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;width:100%;transition:opacity .15s;margin-top:2px}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+
+/* spinner */
+.spinner{width:13px;height:13px;border:2px solid rgba(255,255,255,.35);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;margin-right:6px;vertical-align:middle;position:relative;top:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.hint{font-size:11px;color:var(--muted2);text-align:center;line-height:1.6}
+</style>
+</head>
+<body>
+
+<!-- Top bar -->
+<div class="top-bar">
+  <div class="lang-bar">
+    <button class="lang-btn active" onclick="setLang('uk')">УКР</button>
+    <button class="lang-btn" onclick="setLang('ru')">РУС</button>
+    <button class="lang-btn" onclick="setLang('en')">ENG</button>
+  </div>
+  <button class="theme-btn" onclick="toggleTheme()" id="theme-btn" title="Toggle theme">
+    <svg id="theme-icon-sun" viewBox="0 0 24 24" style="display:none"><path d="M12 17a5 5 0 100-10 5 5 0 000 10zm0-13a1 1 0 011 1v1a1 1 0 01-2 0V5a1 1 0 011-1zm0 14a1 1 0 011 1v1a1 1 0 01-2 0v-1a1 1 0 011-1zm-7-7a1 1 0 010 2H4a1 1 0 010-2h1zm14 0a1 1 0 010 2h-1a1 1 0 010-2h1zM6.22 6.22a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zm9.9 9.9a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zm-9.2 1.42a1 1 0 010-1.42l.7-.7a1 1 0 011.42 1.42l-.7.7a1 1 0 01-1.42 0zM16.12 7.34a1 1 0 010-1.42l.7-.7a1 1 0 011.42 1.42l-.7.7a1 1 0 01-1.42 0z"/></svg>
+    <svg id="theme-icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+  </button>
+</div>
+
+<div class="wrap">
+  <!-- Logo -->
+  <div class="logo">
+    <span class="logo-text">Plan</span>
+    <div class="logo-mic">
+      <svg width="18" height="26" viewBox="0 0 18 26" fill="none">
+        <rect x="3" y="0" width="12" height="16" rx="6" fill="#E03C2F"/>
+        <path d="M1 12a8 8 0 0016 0" stroke="#E03C2F" stroke-width="2" stroke-linecap="round" fill="none"/>
+        <line x1="9" y1="20" x2="9" y2="24" stroke="#E03C2F" stroke-width="2" stroke-linecap="round"/>
+        <line x1="5" y1="24" x2="13" y2="24" stroke="#E03C2F" stroke-width="2" stroke-linecap="round"/>
+      </svg>
+    </div>
+    <span class="logo-text">B</span>
+  </div>
+
+  <div class="card">
+    <div class="tabs">
+      <button class="tab active" id="tab-login"    onclick="switchTab('login')"    data-i18n="tab_login">Вхід</button>
+      <button class="tab"        id="tab-register" onclick="switchTab('register')" data-i18n="tab_register">Реєстрація</button>
+    </div>
+
+    <div class="error-msg"   id="error-msg"></div>
+    <div class="success-msg" id="success-msg"></div>
+
+    <!-- LOGIN -->
+    <div id="form-login">
+      <div class="form">
+        <div class="field-group">
+          <label class="field-label" data-i18n="label_email">Email</label>
+          <input class="field-input" type="email" id="login-email" autocomplete="email" data-i18n-ph="ph_email">
+        </div>
+        <div class="field-group">
+          <label class="field-label" data-i18n="label_password">Пароль</label>
+          <input class="field-input" type="password" id="login-password" autocomplete="current-password" data-i18n-ph="ph_password">
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()" data-i18n="btn_login">Увійти</button>
+      </div>
+    </div>
+
+    <!-- REGISTER -->
+    <div id="form-register" style="display:none">
+      <div class="form">
+        <div class="field-group">
+          <label class="field-label" data-i18n="label_name">Ім'я</label>
+          <input class="field-input" type="text" id="reg-name" autocomplete="name" data-i18n-ph="ph_name">
+        </div>
+        <div class="field-group">
+          <label class="field-label" data-i18n="label_email">Email</label>
+          <input class="field-input" type="email" id="reg-email" autocomplete="email" data-i18n-ph="ph_email">
+        </div>
+        <div class="field-group">
+          <label class="field-label" data-i18n="label_password">Пароль</label>
+          <input class="field-input" type="password" id="reg-password" autocomplete="new-password" data-i18n-ph="ph_password_new">
+        </div>
+        <div class="field-group">
+          <label class="field-label" data-i18n="label_business">Назва бізнесу</label>
+          <input class="field-input" type="text" id="reg-business" data-i18n-ph="ph_business">
+        </div>
+        <button class="btn-primary" id="btn-register" onclick="doRegister()" data-i18n="btn_register">Зареєструватись</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="hint" data-i18n="hint">Plan B · AI-аналітика діалогів персоналу</div>
+</div>
+
+<script>
+const API = 'https://primary-production-4b93e.up.railway.app/webhook';
+
+const i18n = {
+  uk: {
+    tab_login:'Вхід', tab_register:'Реєстрація',
+    label_email:'Email', label_password:'Пароль', label_name:"Ім'я", label_business:'Назва бізнесу',
+    btn_login:'Увійти', btn_register:'Зареєструватись',
+    ph_email:'your@email.com', ph_password:'••••••', ph_password_new:'мінімум 6 символів',
+    ph_name:'Іван Петренко', ph_business:"Кав'ярня «Центр»",
+    hint:'Plan B · AI-аналітика діалогів персоналу',
+    err_email:'Введіть email', err_password:'Введіть пароль', err_name:"Введіть ваше ім'я",
+    err_pass_short:'Пароль мінімум 6 символів', err_business:'Введіть назву бізнесу',
+    err_server:"Немає зв'язку з сервером", ok_login:'Вхід успішний, переходимо...', ok_register:'Акаунт створено, переходимо...', loading:'Зачекайте...'
+  },
+  ru: {
+    tab_login:'Вход', tab_register:'Регистрация',
+    label_email:'Email', label_password:'Пароль', label_name:'Имя', label_business:'Название бизнеса',
+    btn_login:'Войти', btn_register:'Зарегистрироваться',
+    ph_email:'your@email.com', ph_password:'••••••', ph_password_new:'минимум 6 символов',
+    ph_name:'Иван Петренко', ph_business:'Кафе «Центр»',
+    hint:'Plan B · AI-аналитика диалогов персонала',
+    err_email:'Введите email', err_password:'Введите пароль', err_name:'Введите ваше имя',
+    err_pass_short:'Пароль минимум 6 символов', err_business:'Введите название бизнеса',
+    err_server:'Нет связи с сервером', ok_login:'Вход выполнен, переходим...', ok_register:'Аккаунт создан, переходим...', loading:'Подождите...'
+  },
+  en: {
+    tab_login:'Login', tab_register:'Register',
+    label_email:'Email', label_password:'Password', label_name:'Name', label_business:'Business name',
+    btn_login:'Sign in', btn_register:'Create account',
+    ph_email:'your@email.com', ph_password:'••••••', ph_password_new:'at least 6 characters',
+    ph_name:'John Smith', ph_business:'My Coffee Shop',
+    hint:'Plan B · AI analytics for staff conversations',
+    err_email:'Enter your email', err_password:'Enter your password', err_name:'Enter your name',
+    err_pass_short:'Password must be at least 6 characters', err_business:'Enter your business name',
+    err_server:'Server unavailable', ok_login:'Logged in, redirecting...', ok_register:'Account created, redirecting...', loading:'Please wait...'
+  }
+};
+
+let lang  = localStorage.getItem('pb_lang')  || 'uk';
+let theme = localStorage.getItem('pb_theme') || 'light';
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('theme-icon-sun').style.display  = theme === 'dark'  ? 'block' : 'none';
+  document.getElementById('theme-icon-moon').style.display = theme === 'light' ? 'block' : 'none';
+}
+
+function toggleTheme() {
+  theme = theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('pb_theme', theme);
+  applyTheme();
+}
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('pb_lang', l);
+  applyLang();
+}
+
+function applyLang() {
+  const t = i18n[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => { if(t[el.dataset.i18n]) el.textContent = t[el.dataset.i18n]; });
+  document.querySelectorAll('[data-i18n-ph]').forEach(el => { if(t[el.dataset.i18nPh]) el.placeholder = t[el.dataset.i18nPh]; });
+  document.querySelectorAll('.lang-btn').forEach(b => b.classList.toggle('active', b.getAttribute('onclick').includes("'"+lang+"'")));
+}
+
+// Check token
+(async () => {
+  const token = localStorage.getItem('pb_token');
+  if (!token) return;
+  try {
+    const res = await fetch(API+'/pb/auth/me', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token}) });
+    const data = await res.json();
+    if (data.success) window.location.href = 'dashboard.html';
+    else { localStorage.removeItem('pb_token'); localStorage.removeItem('pb_user'); }
+  } catch(e) {}
+})();
+
+function switchTab(tab) {
+  document.getElementById('form-login').style.display    = tab==='login'    ? 'block' : 'none';
+  document.getElementById('form-register').style.display = tab==='register' ? 'block' : 'none';
+  document.getElementById('tab-login').classList.toggle('active',    tab==='login');
+  document.getElementById('tab-register').classList.toggle('active', tab==='register');
+  hideMessages();
+}
+
+function showError(msg)   { const e=document.getElementById('error-msg');   e.textContent=msg; e.classList.add('show'); document.getElementById('success-msg').classList.remove('show'); }
+function showSuccess(msg) { const e=document.getElementById('success-msg'); e.textContent=msg; e.classList.add('show'); document.getElementById('error-msg').classList.remove('show'); }
+function hideMessages()   { document.getElementById('error-msg').classList.remove('show'); document.getElementById('success-msg').classList.remove('show'); }
+
+function setLoading(btnId, loading, key) {
+  const btn=document.getElementById(btnId);
+  btn.disabled=loading;
+  btn.innerHTML=loading ? `<span class="spinner"></span>${i18n[lang].loading}` : i18n[lang][key];
+}
+
+async function doLogin() {
+  hideMessages();
+  const t=i18n[lang];
+  const email=document.getElementById('login-email').value.trim();
+  const password=document.getElementById('login-password').value;
+  if(!email)    return showError(t.err_email);
+  if(!password) return showError(t.err_password);
+  setLoading('btn-login', true, 'btn_login');
+  try {
+    const res=await fetch(API+'/pb/auth/login', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({email,password})});
+    const data=await res.json();
+    if(data.success) {
+      localStorage.setItem('pb_token', data.token);
+      localStorage.setItem('pb_user',  JSON.stringify(data.user));
+      showSuccess(t.ok_login);
+      setTimeout(()=>window.location.href='dashboard.html', 800);
+    } else showError(data.error||t.err_server);
+  } catch(e) { showError(t.err_server); }
+  finally    { setLoading('btn-login', false, 'btn_login'); }
+}
+
+async function doRegister() {
+  hideMessages();
+  const t=i18n[lang];
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const password=document.getElementById('reg-password').value;
+  const business=document.getElementById('reg-business').value.trim();
+  if(!name)                        return showError(t.err_name);
+  if(!email)                       return showError(t.err_email);
+  if(!password||password.length<6) return showError(t.err_pass_short);
+  if(!business)                    return showError(t.err_business);
+  setLoading('btn-register', true, 'btn_register');
+  try {
+    const res=await fetch(API+'/pb/auth/register', {method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({name,email,password,business_name:business})});
+    const data=await res.json();
+    if(data.success) {
+      localStorage.setItem('pb_token', data.token);
+      localStorage.setItem('pb_user',  JSON.stringify(data.user));
+      showSuccess(t.ok_register);
+      setTimeout(()=>window.location.href='dashboard.html', 800);
+    } else showError(data.error||t.err_server);
+  } catch(e) { showError(t.err_server); }
+  finally    { setLoading('btn-register', false, 'btn_register'); }
+}
+
+document.addEventListener('keydown', e => {
+  if(e.key!=='Enter') return;
+  if(document.getElementById('form-login').style.display!=='none') doLogin(); else doRegister();
+});
+
+applyTheme();
+applyLang();
+</script>
+</body>
+</html>
