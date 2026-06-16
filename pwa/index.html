@@ -1,1 +1,978 @@
 
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#ffffff">
+<title>Plan B</title>
+<link rel="manifest" href="manifest.json">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E03C2F;
+  --red-dim: rgba(224,60,47,.10);
+  --red-border: rgba(224,60,47,.25);
+  --green: #16A34A;
+  --green-dim: rgba(22,163,74,.10);
+  --amber: #D97706;
+  --amber-dim: rgba(217,119,6,.10);
+  --bg0: #F0F0F3;
+  --bg1: #FFFFFF;
+  --bg2: #F5F5F8;
+  --bg3: #EBEBEF;
+  --border: rgba(0,0,0,.08);
+  --text: #111114;
+  --muted: #6B6B78;
+  --muted2: #ABABB8;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+[data-theme="dark"] {
+  --bg0: #0C0C0F;
+  --bg1: #141417;
+  --bg2: #1C1C21;
+  --bg3: #242429;
+  --border: rgba(255,255,255,.07);
+  --text: #F0F0F2;
+  --muted: #8A8A96;
+  --muted2: #52525C;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{height:100%;overflow:hidden}
+body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--text);font-size:14px;line-height:1.5;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+
+/* ── APP SHELL ── */
+.app{height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── SCREENS ── */
+.screen{display:none;flex:1;flex-direction:column;overflow:hidden}
+.screen.active{display:flex;animation:fadeIn .2s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ── TOPBAR ── */
+.topbar{display:flex;align-items:center;gap:12px;padding:12px 16px;background:var(--bg1);border-bottom:1px solid var(--border);flex-shrink:0}
+.topbar-back{width:32px;height:32px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);flex-shrink:0}
+.topbar-back svg{width:16px;height:16px;fill:currentColor}
+.topbar-title{font-size:15px;font-weight:600;color:var(--text);flex:1}
+.topbar-action{font-size:12px;font-weight:500;color:var(--red);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif}
+
+/* ── SCROLL AREA ── */
+.scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch}
+.scroll::-webkit-scrollbar{display:none}
+
+/* ── BTNS ── */
+.btn-primary{width:100%;padding:14px;border-radius:12px;border:none;background:var(--red);color:#fff;font-size:15px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s}
+.btn-primary:hover{opacity:.88}
+.btn-primary:disabled{opacity:.5;cursor:not-allowed}
+.btn-secondary{width:100%;padding:13px;border-radius:12px;border:1px solid var(--border);background:var(--bg2);color:var(--text);font-size:15px;font-weight:500;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s}
+.btn-secondary:hover{border-color:var(--muted)}
+.btn-ghost{width:100%;padding:12px;border-radius:12px;border:none;background:none;color:var(--muted);font-size:13px;cursor:pointer;font-family:'Inter',sans-serif}
+
+/* ── TAGS ── */
+.tag{display:inline-flex;align-items:center;gap:4px;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600}
+.tag-green{background:var(--green-dim);color:var(--green)}
+.tag-red{background:var(--red-dim);color:var(--red)}
+.tag-amber{background:var(--amber-dim);color:var(--amber)}
+
+/* ── CARD ── */
+.card{background:var(--bg1);border:1px solid var(--border);border-radius:12px;padding:14px}
+
+/* ── SPINNER ── */
+.spinner{width:16px;height:16px;border:2px solid rgba(255,255,255,.3);border-top-color:#fff;border-radius:50%;animation:spin .6s linear infinite;display:inline-block;margin-right:8px;vertical-align:middle;position:relative;top:-1px}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+/* ════════════════════════════════
+   SCREEN 0 — LOGIN
+════════════════════════════════ */
+#s0{background:var(--bg1);justify-content:center;align-items:center;padding:32px 24px}
+.s0-logo{display:flex;align-items:center;justify-content:center;margin-bottom:8px}
+.s0-logo-text{font-family:var(--font-mono);font-weight:800;font-size:32px;color:var(--text);letter-spacing:-.04em}
+.s0-title{font-size:18px;font-weight:700;color:var(--text);text-align:center;margin-bottom:4px;letter-spacing:-.02em}
+.s0-sub{font-size:13px;color:var(--muted);text-align:center;margin-bottom:32px}
+.s0-form{width:100%;max-width:340px;display:flex;flex-direction:column;gap:14px}
+.inp-label{font-size:11px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.04em;margin-bottom:5px}
+.inp{width:100%;background:var(--bg2);border:1px solid var(--border);border-radius:10px;padding:12px 14px;font-size:15px;color:var(--text);font-family:'Inter',sans-serif;outline:none;transition:border-color .15s,box-shadow .15s}
+.inp:focus{border-color:var(--red-border);box-shadow:0 0 0 3px var(--red-dim)}
+.inp::placeholder{color:var(--muted2)}
+.s0-error{font-size:12px;color:var(--red);background:var(--red-dim);border:1px solid var(--red-border);border-radius:8px;padding:9px 12px;display:none}
+.s0-error.show{display:block}
+
+/* ════════════════════════════════
+   SCREEN 1 — MODE SELECT
+════════════════════════════════ */
+#s1{background:var(--bg0)}
+.s1-header{padding:24px 16px 16px;background:var(--bg1);border-bottom:1px solid var(--border)}
+.s1-greeting{font-size:13px;color:var(--muted);margin-bottom:2px}
+.s1-biz{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:4px}
+.s1-user{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.s1-logout{margin-left:auto;font-size:11px;color:var(--muted2);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif}
+.s1-cards{padding:16px;display:flex;flex-direction:column;gap:12px}
+.mode-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:20px;cursor:pointer;transition:all .15s;display:flex;align-items:center;gap:14px}
+.mode-card:hover{border-color:var(--red-border);background:var(--red-dim)}
+.mode-card-ico{width:44px;height:44px;border-radius:12px;background:var(--red-dim);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:22px}
+.mode-card-body{flex:1}
+.mode-card-title{font-size:15px;font-weight:600;color:var(--text);margin-bottom:3px}
+.mode-card-desc{font-size:12px;color:var(--muted);line-height:1.4}
+.mode-card-arrow{font-size:18px;color:var(--muted2)}
+
+/* ════════════════════════════════
+   SCREEN 2 — EMPLOYEE SELECT
+════════════════════════════════ */
+#s2{background:var(--bg0)}
+.emp-search{padding:12px 16px;background:var(--bg1);border-bottom:1px solid var(--border)}
+.emp-search-wrap{background:var(--bg2);border:1px solid var(--border);border-radius:10px;display:flex;align-items:center;gap:8px;padding:10px 12px}
+.emp-search-wrap svg{width:14px;height:14px;fill:var(--muted);flex-shrink:0}
+.emp-search-inp{border:none;background:none;font-size:14px;color:var(--text);outline:none;flex:1;font-family:'Inter',sans-serif}
+.emp-search-inp::placeholder{color:var(--muted2)}
+.emp-list{flex:1;overflow-y:auto;padding:8px}
+.emp-item{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;cursor:pointer;transition:all .15s;margin-bottom:4px;border:2px solid transparent}
+.emp-item:hover{background:var(--bg1)}
+.emp-item.selected{background:var(--bg1);border-color:var(--red)}
+.emp-av{width:40px;height:40px;border-radius:10px;background:var(--bg3);display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;color:var(--muted);flex-shrink:0}
+.emp-item.selected .emp-av{background:var(--red);color:#fff}
+.emp-name{font-size:14px;font-weight:500;color:var(--text)}
+.emp-role{font-size:12px;color:var(--muted);margin-top:1px}
+.emp-check{margin-left:auto;color:var(--red);display:none}
+.emp-item.selected .emp-check{display:block}
+.emp-btn{padding:12px 16px;background:var(--bg1);border-top:1px solid var(--border)}
+
+/* ════════════════════════════════
+   SCREEN 3 — ACTIVE SHIFT
+════════════════════════════════ */
+#s3{background:var(--bg0)}
+.shift-header{padding:14px 16px;background:var(--bg1);border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.shift-av{width:36px;height:36px;border-radius:10px;background:var(--red);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.shift-name{font-size:14px;font-weight:600;color:var(--text)}
+.shift-role{font-size:11px;color:var(--muted)}
+.rec-block{background:var(--bg1);margin:12px 16px;border-radius:16px;border:1px solid var(--border);padding:24px 16px;display:flex;flex-direction:column;align-items:center;gap:8px}
+.rec-pulse{width:64px;height:64px;border-radius:50%;background:var(--red-dim);display:flex;align-items:center;justify-content:center;position:relative}
+.rec-pulse::before{content:'';position:absolute;inset:-6px;border-radius:50%;background:var(--red-dim);animation:pulse-ring 2s ease infinite}
+@keyframes pulse-ring{0%{opacity:.6;transform:scale(1)}100%{opacity:0;transform:scale(1.3)}}
+.rec-dot{width:48px;height:48px;border-radius:50%;background:var(--red);display:flex;align-items:center;justify-content:center;position:relative;z-index:1}
+.rec-dot svg{width:20px;height:20px;fill:#fff}
+.rec-timer{font-family:var(--font-mono);font-size:28px;font-weight:700;color:var(--text);letter-spacing:-.03em}
+.rec-status{font-size:12px;color:var(--muted)}
+.vad-bars{display:flex;align-items:center;gap:3px;height:20px}
+.vad-bar{width:3px;border-radius:2px;background:var(--red);opacity:.4;transition:height .1s}
+.shift-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin:0 16px 12px}
+.shift-stat{background:var(--bg1);padding:12px;text-align:center}
+.shift-stat-num{font-size:22px;font-weight:700;letter-spacing:-.03em;margin-bottom:2px}
+.shift-stat-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+.dial-section{padding:0 16px 8px}
+.sec-label{font-size:11px;font-weight:600;color:var(--muted2);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.dial-item{background:var(--bg1);border:1px solid var(--border);border-radius:10px;padding:10px 14px;display:flex;align-items:center;gap:10px;margin-bottom:6px;cursor:pointer;transition:all .15s}
+.dial-item:hover{border-color:var(--red-border)}
+.dial-score{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700;flex-shrink:0}
+.dial-score.ok{background:var(--green-dim);color:var(--green)}
+.dial-score.warn{background:var(--amber-dim);color:var(--amber)}
+.dial-score.bad{background:var(--red-dim);color:var(--red)}
+.dial-time{font-size:13px;font-weight:500;color:var(--text)}
+.dial-dur{font-size:11px;color:var(--muted);margin-left:auto;font-family:var(--font-mono)}
+.dial-arr{color:var(--muted2);font-size:14px}
+.shift-end-btn{padding:12px 16px 24px;background:var(--bg0)}
+
+/* ════════════════════════════════
+   SCREEN 4 — DIALOG DETAIL
+════════════════════════════════ */
+#s4{background:var(--bg0)}
+.dlg-hero{background:var(--bg1);border-bottom:1px solid var(--border);padding:16px;display:flex;align-items:center;gap:14px}
+.dlg-score-circle{width:56px;height:56px;border-radius:50%;display:flex;flex-direction:column;align-items:center;justify-content:center;flex-shrink:0}
+.dlg-score-circle.hi{background:var(--green-dim);border:2px solid var(--green)}
+.dlg-score-circle.mid{background:var(--amber-dim);border:2px solid var(--amber)}
+.dlg-score-circle.lo{background:var(--red-dim);border:2px solid var(--red)}
+.dlg-score-num{font-size:20px;font-weight:800;letter-spacing:-.03em}
+.dlg-score-of{font-size:9px;color:var(--muted)}
+.dlg-summary{font-size:13px;color:var(--muted);line-height:1.5;flex:1}
+.dlg-block{padding:12px 16px}
+.viol-item{display:flex;gap:10px;align-items:flex-start;padding:10px;background:var(--red-dim);border:1px solid var(--red-border);border-radius:10px;margin-bottom:6px}
+.viol-icon{font-size:14px;flex-shrink:0;margin-top:1px}
+.viol-rule{font-size:13px;font-weight:500;color:var(--text)}
+.viol-comment{font-size:11px;color:var(--muted);margin-top:2px}
+.str-item{display:flex;gap:8px;align-items:center;padding:8px 10px;border-bottom:1px solid var(--border)}
+.str-item:last-child{border-bottom:none}
+.str-icon{color:var(--green);font-size:14px;flex-shrink:0}
+.str-text{font-size:13px;color:var(--text)}
+.transcript-box{background:var(--bg2);border-radius:10px;padding:12px;font-size:12px;color:var(--muted);line-height:1.65;font-family:var(--font-mono)}
+
+/* ════════════════════════════════
+   SCREEN 5 — SHIFT SUMMARY
+════════════════════════════════ */
+#s5{background:var(--bg0)}
+.sum-hero{background:var(--bg1);border-bottom:1px solid var(--border);padding:24px 16px;text-align:center}
+.sum-medal{font-size:40px;margin-bottom:8px}
+.sum-title{font-size:20px;font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:4px}
+.sum-sub{font-size:13px;color:var(--muted)}
+.sum-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1px;background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.sum-cell{background:var(--bg1);padding:16px;text-align:center}
+.sum-num{font-size:28px;font-weight:700;letter-spacing:-.04em;margin-bottom:2px}
+.sum-label{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.04em}
+
+/* ════════════════════════════════
+   RECORDING STATE OVERLAY
+════════════════════════════════ */
+.rec-indicator-wrap{display:none;position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:var(--red);color:#fff;padding:8px 16px;border-radius:20px;font-size:12px;font-weight:600;gap:6px;align-items:center;z-index:50;box-shadow:0 4px 20px rgba(224,60,47,.4)}
+.rec-indicator-wrap.show{display:flex}
+.rec-blink{width:8px;height:8px;border-radius:50%;background:#fff;animation:blink 1s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ════════════════════════════════
+   UPLOAD QUEUE BADGE
+════════════════════════════════ */
+.upload-badge{position:fixed;top:16px;right:16px;background:var(--amber);color:#fff;font-size:11px;font-weight:600;padding:4px 10px;border-radius:20px;display:none;z-index:100}
+.upload-badge.show{display:block}
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- SCREEN 0: LOGIN -->
+  <div class="screen active" id="s0">
+    <div id="s0-inner" style="display:flex;flex-direction:column;align-items:center;justify-content:center;flex:1;padding:32px 24px">
+      <div class="s0-logo">
+        <span class="s0-logo-text">Plan</span>
+        <svg width="22" height="32" viewBox="0 0 18 26" fill="none" style="margin:0 4px;position:relative;top:2px">
+          <rect x="3" y="0" width="12" height="16" rx="6" fill="#E03C2F"/>
+          <path d="M1 12a8 8 0 0016 0" stroke="#E03C2F" stroke-width="2" stroke-linecap="round" fill="none"/>
+          <line x1="9" y1="20" x2="9" y2="24" stroke="#E03C2F" stroke-width="2" stroke-linecap="round"/>
+          <line x1="5" y1="24" x2="13" y2="24" stroke="#E03C2F" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+        <span class="s0-logo-text" style="color:var(--red)">B</span>
+      </div>
+      <div class="s0-title" data-i18n="login_title">Увійти до Plan B</div>
+      <div class="s0-sub" data-i18n="login_sub">Аналітика розмов персоналу</div>
+      <div class="s0-error" id="s0-error"></div>
+      <div class="s0-form">
+        <div>
+          <div class="inp-label" data-i18n="label_email">Email</div>
+          <input class="inp" type="email" id="login-email" placeholder="your@email.com" autocomplete="email">
+        </div>
+        <div>
+          <div class="inp-label" data-i18n="label_password">Пароль</div>
+          <input class="inp" type="password" id="login-password" placeholder="••••••" autocomplete="current-password">
+        </div>
+        <button class="btn-primary" id="btn-login" onclick="doLogin()" data-i18n="btn_login">Увійти</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 1: MODE SELECT -->
+  <div class="screen" id="s1">
+    <div class="s1-header">
+      <div class="s1-greeting" id="s1-greeting">Доброго ранку</div>
+      <div class="s1-biz" id="s1-biz">—</div>
+      <div class="s1-user">
+        <span id="s1-username">—</span>
+        <button class="s1-logout" onclick="doLogout()" data-i18n="logout">Вийти</button>
+      </div>
+    </div>
+    <div class="s1-cards scroll">
+      <div class="mode-card" onclick="goTo('s2')">
+        <div class="mode-card-ico">🎙️</div>
+        <div class="mode-card-body">
+          <div class="mode-card-title" data-i18n="shift_mode_title">Розпочати зміну</div>
+          <div class="mode-card-desc" data-i18n="shift_mode_desc">Запис діалогів з клієнтами, аналіз скрипту, рейтинг</div>
+        </div>
+        <div class="mode-card-arrow">→</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 2: EMPLOYEE SELECT -->
+  <div class="screen" id="s2">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s1')">
+        <svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+      <div class="topbar-title" data-i18n="who_working">Хто працює зараз?</div>
+    </div>
+    <div class="emp-search">
+      <div class="emp-search-wrap">
+        <svg viewBox="0 0 16 16" fill="none"><circle cx="6.5" cy="6.5" r="4" stroke="currentColor" stroke-width="1.5"/><path d="M9.5 9.5l3 3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+        <input class="emp-search-inp" id="emp-search" type="text" placeholder="Пошук..." oninput="filterEmployees(this.value)">
+      </div>
+    </div>
+    <div class="emp-list scroll" id="emp-list">
+      <div style="padding:32px;text-align:center;color:var(--muted)" id="emp-loading" data-i18n="loading">Завантаження...</div>
+    </div>
+    <div class="emp-btn">
+      <button class="btn-primary" id="btn-start-shift" onclick="startShift()" disabled data-i18n="start_shift">Розпочати зміну →</button>
+    </div>
+  </div>
+
+  <!-- SCREEN 3: ACTIVE SHIFT -->
+  <div class="screen" id="s3">
+    <div class="shift-header">
+      <div class="shift-av" id="s3-av">—</div>
+      <div>
+        <div class="shift-name" id="s3-name">—</div>
+        <div class="shift-role" id="s3-role">—</div>
+      </div>
+      <div style="margin-left:auto"><span class="tag tag-green" data-i18n="active">● Активна</span></div>
+    </div>
+    <div class="scroll">
+      <div class="rec-block">
+        <div class="rec-pulse">
+          <div class="rec-dot">
+            <svg viewBox="0 0 24 24" fill="white" width="20" height="20"><path d="M12 1a4 4 0 014 4v7a4 4 0 01-8 0V5a4 4 0 014-4zm0 18a7 7 0 007-7h2a9 9 0 01-8 8.94V23h-2v-2.06A9 9 0 013 12h2a7 7 0 007 7z"/></svg>
+          </div>
+        </div>
+        <div class="rec-timer" id="shift-timer">00:00:00</div>
+        <div class="rec-status" id="rec-status" data-i18n="listening">Слухаю...</div>
+        <div class="vad-bars" id="vad-bars">
+          <div class="vad-bar" style="height:4px"></div>
+          <div class="vad-bar" style="height:8px"></div>
+          <div class="vad-bar" style="height:6px"></div>
+          <div class="vad-bar" style="height:12px"></div>
+          <div class="vad-bar" style="height:8px"></div>
+          <div class="vad-bar" style="height:4px"></div>
+          <div class="vad-bar" style="height:10px"></div>
+        </div>
+      </div>
+
+      <div class="shift-stats">
+        <div class="shift-stat">
+          <div class="shift-stat-num" id="stat-dialogs" style="color:var(--text)">0</div>
+          <div class="shift-stat-label" data-i18n="dialogs">Діалогів</div>
+        </div>
+        <div class="shift-stat">
+          <div class="shift-stat-num" id="stat-score" style="color:var(--green)">—</div>
+          <div class="shift-stat-label" data-i18n="avg_score">Серед. оцінка</div>
+        </div>
+        <div class="shift-stat">
+          <div class="shift-stat-num" id="stat-violations" style="color:var(--red)">0</div>
+          <div class="shift-stat-label" data-i18n="violations">Порушень</div>
+        </div>
+      </div>
+
+      <div class="dial-section">
+        <div class="sec-label" data-i18n="last_dialogs">Останні діалоги</div>
+        <div id="dialogs-list">
+          <div style="font-size:12px;color:var(--muted2);text-align:center;padding:16px" data-i18n="no_dialogs">Діалогів ще немає</div>
+        </div>
+      </div>
+
+      <div class="shift-end-btn">
+        <button class="btn-secondary" onclick="endShift()" data-i18n="end_shift">Завершити зміну</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 4: DIALOG DETAIL -->
+  <div class="screen" id="s4">
+    <div class="topbar">
+      <button class="topbar-back" onclick="goTo('s3')">
+        <svg viewBox="0 0 16 16"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/></svg>
+      </button>
+      <div class="topbar-title" id="s4-title">Діалог</div>
+    </div>
+    <div class="scroll">
+      <div class="dlg-hero">
+        <div class="dlg-score-circle hi" id="s4-circle">
+          <div class="dlg-score-num" id="s4-score">—</div>
+          <div class="dlg-score-of" data-i18n="score_of">з 100</div>
+        </div>
+        <div class="dlg-summary" id="s4-summary">—</div>
+      </div>
+
+      <div class="dlg-block">
+        <div class="sec-label" data-i18n="violations_title">Порушення</div>
+        <div id="s4-violations"><div style="font-size:12px;color:var(--green);padding:8px 0" data-i18n="no_violations">✓ Порушень немає</div></div>
+      </div>
+
+      <div class="dlg-block">
+        <div class="sec-label" data-i18n="strengths_title">Виконано правильно</div>
+        <div class="card" id="s4-strengths" style="padding:4px 10px">
+          <div style="font-size:12px;color:var(--muted);padding:8px 0">—</div>
+        </div>
+      </div>
+
+      <div class="dlg-block" style="padding-bottom:24px">
+        <div class="sec-label" data-i18n="transcript_title">Транскрипт</div>
+        <div class="transcript-box" id="s4-transcript">—</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCREEN 5: SHIFT SUMMARY -->
+  <div class="screen" id="s5">
+    <div class="scroll">
+      <div class="sum-hero">
+        <div class="sum-medal">🏆</div>
+        <div class="sum-title" data-i18n="shift_done">Зміну завершено!</div>
+        <div class="sum-sub" id="s5-sub">—</div>
+      </div>
+      <div class="sum-grid">
+        <div class="sum-cell">
+          <div class="sum-num" id="s5-dialogs" style="color:var(--text)">0</div>
+          <div class="sum-label" data-i18n="total_dialogs">Діалогів</div>
+        </div>
+        <div class="sum-cell">
+          <div class="sum-num" id="s5-score" style="color:var(--green)">—</div>
+          <div class="sum-label" data-i18n="avg_score">Серед. оцінка</div>
+        </div>
+        <div class="sum-cell">
+          <div class="sum-num" id="s5-violations" style="color:var(--red)">0</div>
+          <div class="sum-label" data-i18n="violations">Порушень</div>
+        </div>
+        <div class="sum-cell">
+          <div class="sum-num" id="s5-duration" style="color:var(--muted)">—</div>
+          <div class="sum-label" data-i18n="duration">Тривалість</div>
+        </div>
+      </div>
+      <div style="padding:16px">
+        <div class="sec-label" data-i18n="top_violation" style="margin-bottom:8px">Головне порушення</div>
+        <div class="card" id="s5-top-violation" style="margin-bottom:16px;font-size:13px;color:var(--muted)">—</div>
+        <button class="btn-primary" onclick="goTo('s1')" data-i18n="new_shift">Нова зміна →</button>
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<!-- Recording indicator -->
+<div class="rec-indicator-wrap" id="rec-indicator">
+  <div class="rec-blink"></div>
+  <span data-i18n="recording">Запис...</span>
+</div>
+
+<!-- Upload queue badge -->
+<div class="upload-badge" id="upload-badge">⬆ <span id="upload-count">0</span></div>
+
+<script>
+const API = 'https://primary-production-4b93e.up.railway.app/webhook';
+
+// ── i18n ─────────────────────────────────────────────────────
+const i18n = {
+  uk: {
+    login_title:'Увійти до Plan B', login_sub:'Аналітика розмов персоналу',
+    label_email:'Email', label_password:'Пароль', btn_login:'Увійти',
+    logout:'Вийти', who_working:'Хто працює зараз?',
+    shift_mode_title:'Розпочати зміну', shift_mode_desc:'Запис діалогів з клієнтами, аналіз скрипту, рейтинг',
+    start_shift:'Розпочати зміну →', end_shift:'Завершити зміну',
+    listening:'Слухаю...', recording_speech:'Записую мовлення...',
+    dialogs:'Діалогів', avg_score:'Серед. оцінка', violations:'Порушень',
+    last_dialogs:'Останні діалоги', no_dialogs:'Діалогів ще немає',
+    score_of:'з 100', violations_title:'Порушення', strengths_title:'Виконано правильно',
+    transcript_title:'Транскрипт', no_violations:'✓ Порушень немає',
+    shift_done:'Зміну завершено!', total_dialogs:'Діалогів', duration:'Тривалість',
+    top_violation:'Головне порушення', new_shift:'Нова зміна →',
+    loading:'Завантаження...', recording:'Запис...',
+    active:'● Активна', err_creds:'Невірний email або пароль', err_server:"Немає зв'язку з сервером",
+    greeting_morning:'Доброго ранку', greeting_afternoon:'Доброго дня', greeting_evening:'Доброго вечора',
+    uploading:'Відправляю аудіо...', upload_ok:'Аналіз готовий',
+  },
+  ru: {
+    login_title:'Войти в Plan B', login_sub:'Аналитика разговоров персонала',
+    label_email:'Email', label_password:'Пароль', btn_login:'Войти',
+    logout:'Выйти', who_working:'Кто работает сейчас?',
+    shift_mode_title:'Начать смену', shift_mode_desc:'Запись диалогов с клиентами, анализ скрипта, рейтинг',
+    start_shift:'Начать смену →', end_shift:'Завершить смену',
+    listening:'Слушаю...', recording_speech:'Запись речи...',
+    dialogs:'Диалогов', avg_score:'Средняя оценка', violations:'Нарушений',
+    last_dialogs:'Последние диалоги', no_dialogs:'Диалогов ещё нет',
+    score_of:'из 100', violations_title:'Нарушения', strengths_title:'Выполнено правильно',
+    transcript_title:'Транскрипт', no_violations:'✓ Нарушений нет',
+    shift_done:'Смена завершена!', total_dialogs:'Диалогов', duration:'Длительность',
+    top_violation:'Главное нарушение', new_shift:'Новая смена →',
+    loading:'Загрузка...', recording:'Запись...',
+    active:'● Активна', err_creds:'Неверный email или пароль', err_server:'Нет связи с сервером',
+    greeting_morning:'Доброе утро', greeting_afternoon:'Добрый день', greeting_evening:'Добрый вечер',
+    uploading:'Отправляю аудио...', upload_ok:'Анализ готов',
+  },
+  en: {
+    login_title:'Sign in to Plan B', login_sub:'Staff conversation analytics',
+    label_email:'Email', label_password:'Password', btn_login:'Sign in',
+    logout:'Sign out', who_working:'Who is working now?',
+    shift_mode_title:'Start shift', shift_mode_desc:'Record customer dialogs, script analysis, ratings',
+    start_shift:'Start shift →', end_shift:'End shift',
+    listening:'Listening...', recording_speech:'Recording speech...',
+    dialogs:'Dialogs', avg_score:'Avg score', violations:'Violations',
+    last_dialogs:'Recent dialogs', no_dialogs:'No dialogs yet',
+    score_of:'/ 100', violations_title:'Violations', strengths_title:'Done correctly',
+    transcript_title:'Transcript', no_violations:'✓ No violations',
+    shift_done:'Shift completed!', total_dialogs:'Dialogs', duration:'Duration',
+    top_violation:'Top violation', new_shift:'New shift →',
+    loading:'Loading...', recording:'Recording...',
+    active:'● Active', err_creds:'Wrong email or password', err_server:'Server unavailable',
+    greeting_morning:'Good morning', greeting_afternoon:'Good afternoon', greeting_evening:'Good evening',
+    uploading:'Uploading audio...', upload_ok:'Analysis ready',
+  }
+};
+
+let lang = localStorage.getItem('pb_lang') || 'uk';
+let theme = localStorage.getItem('pb_theme') || 'light';
+
+function t(key) { return (i18n[lang] || i18n.uk)[key] || key; }
+
+function applyLang() {
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const v = t(el.dataset.i18n);
+    if (v) el.textContent = v;
+  });
+}
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', theme);
+}
+
+// ── STATE ─────────────────────────────────────────────────────
+let state = {
+  token: null, user: null,
+  employees: [], selectedEmployee: null,
+  shiftId: null, shiftStartTime: null,
+  dialogs: [], currentDialog: null,
+  mediaRecorder: null, audioChunks: [],
+  isRecording: false, vadActive: false,
+  timerInterval: null, uploadQueue: []
+};
+
+// ── SCREEN NAVIGATION ─────────────────────────────────────────
+function goTo(screenId) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(screenId).classList.add('active');
+}
+
+// ── GREETING ──────────────────────────────────────────────────
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return t('greeting_morning');
+  if (h < 18) return t('greeting_afternoon');
+  return t('greeting_evening');
+}
+
+// ── AUTH ──────────────────────────────────────────────────────
+async function doLogin() {
+  const email    = document.getElementById('login-email').value.trim();
+  const password = document.getElementById('login-password').value;
+  const errEl    = document.getElementById('s0-error');
+  errEl.classList.remove('show');
+
+  const btn = document.getElementById('btn-login');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>`;
+
+  try {
+    const res  = await fetch(API + '/pb/auth/login', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({email, password}) });
+    const data = await res.json();
+    if (data.success) {
+      if (data.user.role !== 'owner' && data.user.role !== 'employee') {
+        errEl.textContent = 'Цей додаток тільки для персоналу';
+        errEl.classList.add('show');
+        return;
+      }
+      state.token = data.token;
+      state.user  = data.user;
+      localStorage.setItem('pb_token', data.token);
+      localStorage.setItem('pb_user',  JSON.stringify(data.user));
+      afterLogin();
+    } else {
+      errEl.textContent = data.error || t('err_creds');
+      errEl.classList.add('show');
+    }
+  } catch(e) {
+    errEl.textContent = t('err_server');
+    errEl.classList.add('show');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = t('btn_login');
+  }
+}
+
+function afterLogin() {
+  document.getElementById('s1-greeting').textContent = getGreeting();
+  document.getElementById('s1-biz').textContent = state.user.name || '—';
+  document.getElementById('s1-username').textContent = state.user.name;
+  goTo('s1');
+}
+
+function doLogout() {
+  localStorage.removeItem('pb_token');
+  localStorage.removeItem('pb_user');
+  state.token = null;
+  state.user  = null;
+  goTo('s0');
+}
+
+// ── EMPLOYEES ─────────────────────────────────────────────────
+async function loadEmployees() {
+  document.getElementById('emp-list').innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted)">${t('loading')}</div>`;
+  try {
+    const res  = await fetch(API + '/pb/employees/list', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token: state.token}) });
+    const data = await res.json();
+    if (data.success) {
+      state.employees = data.employees;
+      renderEmployees(state.employees);
+    }
+  } catch(e) {}
+}
+
+function renderEmployees(list) {
+  const el = document.getElementById('emp-list');
+  if (!list.length) { el.innerHTML = `<div style="padding:32px;text-align:center;color:var(--muted)">Немає співробітників</div>`; return; }
+  el.innerHTML = list.map(emp => `
+    <div class="emp-item" id="emp-${emp.employee_id}" onclick="selectEmployee(${emp.employee_id}, ${emp.user_id}, '${emp.name}', '${emp.position || ''}')">
+      <div class="emp-av">${emp.name.slice(0,2).toUpperCase()}</div>
+      <div style="flex:1">
+        <div class="emp-name">${emp.name}</div>
+        <div class="emp-role">${emp.position || ''}</div>
+      </div>
+      <svg class="emp-check" width="18" height="18" viewBox="0 0 16 16" fill="none"><path d="M3 8l4 4 6-7" stroke="#E03C2F" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+  `).join('');
+}
+
+function filterEmployees(q) {
+  const filtered = state.employees.filter(e => e.name.toLowerCase().includes(q.toLowerCase()));
+  renderEmployees(filtered);
+}
+
+function selectEmployee(empId, userId, name, position) {
+  document.querySelectorAll('.emp-item').forEach(el => el.classList.remove('selected'));
+  document.getElementById('emp-' + empId)?.classList.add('selected');
+  state.selectedEmployee = { employee_id: empId, user_id: userId, name, position };
+  document.getElementById('btn-start-shift').disabled = false;
+}
+
+// ── SHIFT ─────────────────────────────────────────────────────
+async function startShift() {
+  if (!state.selectedEmployee) return;
+  const btn = document.getElementById('btn-start-shift');
+  btn.disabled = true;
+  btn.innerHTML = `<span class="spinner"></span>`;
+
+  try {
+    const res  = await fetch(API + '/pb/shifts/start', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: state.token, employee_user_id: state.selectedEmployee.user_id }) });
+    const data = await res.json();
+    if (data.success) {
+      state.shiftId        = data.shift.id;
+      state.shiftStartTime = new Date();
+      state.dialogs        = [];
+
+      // Update s3 header
+      const initials = state.selectedEmployee.name.slice(0,2).toUpperCase();
+      document.getElementById('s3-av').textContent   = initials;
+      document.getElementById('s3-name').textContent = state.selectedEmployee.name;
+      document.getElementById('s3-role').textContent = state.selectedEmployee.position || '';
+
+      goTo('s3');
+      startTimer();
+      startListening();
+    }
+  } catch(e) {}
+  finally {
+    btn.disabled = false;
+    btn.textContent = t('start_shift');
+  }
+}
+
+async function endShift() {
+  stopListening();
+  if (state.timerInterval) clearInterval(state.timerInterval);
+
+  try {
+    await fetch(API + '/pb/shifts/end', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: state.token, shift_id: state.shiftId }) });
+  } catch(e) {}
+
+  // Fill summary
+  const totalDialogs    = state.dialogs.length;
+  const scores          = state.dialogs.filter(d => d.ai_score).map(d => d.ai_score);
+  const avgScore        = scores.length ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : '—';
+  const totalViolations = state.dialogs.reduce((sum, d) => sum + (d.ai_result?.violations?.length || 0), 0);
+  const duration        = formatDuration((Date.now() - state.shiftStartTime) / 1000);
+
+  document.getElementById('s5-sub').textContent        = state.selectedEmployee.name + ' · ' + duration;
+  document.getElementById('s5-dialogs').textContent    = totalDialogs;
+  document.getElementById('s5-score').textContent      = avgScore;
+  document.getElementById('s5-violations').textContent = totalViolations;
+  document.getElementById('s5-duration').textContent   = duration;
+
+  // Top violation
+  const allViols = state.dialogs.flatMap(d => d.ai_result?.violations || []);
+  const topViol  = allViols.length ? allViols[0] : '—';
+  document.getElementById('s5-top-violation').textContent = topViol;
+
+  goTo('s5');
+}
+
+// ── TIMER ─────────────────────────────────────────────────────
+function startTimer() {
+  state.timerInterval = setInterval(() => {
+    const elapsed = Math.floor((Date.now() - state.shiftStartTime) / 1000);
+    document.getElementById('shift-timer').textContent = formatDuration(elapsed);
+  }, 1000);
+}
+
+function formatDuration(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  return `${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+}
+
+// ── VAD + RECORDING ───────────────────────────────────────────
+let audioContext, analyser, microphone, silenceTimer, mediaStream;
+const SILENCE_THRESHOLD = 0.015;
+const SILENCE_DURATION  = 1500; // ms до завершення діалогу
+
+async function startListening() {
+  try {
+    mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { echoCancellation: true, noiseSuppression: true }, video: false });
+    audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    analyser     = audioContext.createAnalyser();
+    microphone   = audioContext.createMediaStreamSource(mediaStream);
+    analyser.fftSize = 256;
+    microphone.connect(analyser);
+    animateVAD();
+    document.getElementById('rec-status').textContent = t('listening');
+  } catch(e) {
+    document.getElementById('rec-status').textContent = 'Мікрофон недоступний';
+  }
+}
+
+function stopListening() {
+  if (state.isRecording) stopRecording();
+  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
+  if (audioContext) audioContext.close();
+}
+
+function animateVAD() {
+  if (!analyser) return;
+  const data   = new Uint8Array(analyser.frequencyBinCount);
+  const bars   = document.querySelectorAll('.vad-bar');
+  let speaking = false;
+
+  function tick() {
+    if (!analyser) return;
+    analyser.getByteFrequencyData(data);
+    const avg = data.slice(0, 32).reduce((a,b) => a+b, 0) / 32 / 255;
+
+    bars.forEach((bar, i) => {
+      const h = Math.max(3, avg * 60 * (0.5 + Math.random() * 0.5));
+      bar.style.height = h + 'px';
+      bar.style.opacity = avg > SILENCE_THRESHOLD ? '1' : '0.3';
+    });
+
+    if (avg > SILENCE_THRESHOLD) {
+      if (!speaking) { speaking = true; onSpeechStart(); }
+      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
+    } else {
+      if (speaking && !silenceTimer) {
+        silenceTimer = setTimeout(() => { speaking = false; onSpeechEnd(); }, SILENCE_DURATION);
+      }
+    }
+    requestAnimationFrame(tick);
+  }
+  tick();
+}
+
+function onSpeechStart() {
+  if (state.isRecording) return;
+  state.isRecording  = true;
+  state.audioChunks  = [];
+  state.mediaRecorder = new MediaRecorder(mediaStream, { mimeType: 'audio/webm' });
+  state.mediaRecorder.ondataavailable = e => { if(e.data.size > 0) state.audioChunks.push(e.data); };
+  state.mediaRecorder.start(100);
+  document.getElementById('rec-indicator').classList.add('show');
+  document.getElementById('rec-status').textContent = t('recording_speech');
+}
+
+function onSpeechEnd() {
+  if (!state.isRecording) return;
+  stopRecording();
+}
+
+function stopRecording() {
+  if (!state.mediaRecorder || state.mediaRecorder.state === 'inactive') return;
+  state.isRecording = false;
+  state.mediaRecorder.stop();
+  state.mediaRecorder.onstop = () => {
+    const blob = new Blob(state.audioChunks, { type: 'audio/webm' });
+    if (blob.size > 5000) uploadDialog(blob); // игнор короткие шумы
+    state.audioChunks = [];
+  };
+  document.getElementById('rec-indicator').classList.remove('show');
+  document.getElementById('rec-status').textContent = t('listening');
+}
+
+// ── UPLOAD DIALOG ─────────────────────────────────────────────
+async function uploadDialog(audioBlob) {
+  const formData = new FormData();
+  formData.append('token',            state.token);
+  formData.append('employee_user_id', state.selectedEmployee.user_id);
+  formData.append('audio',            audioBlob, 'dialog.webm');
+
+  // Add to queue
+  state.uploadQueue.push(1);
+  updateUploadBadge();
+
+  try {
+    const res  = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: formData });
+    const data = await res.json();
+    if (data.success) {
+      // Fetch full dialog details
+      const res2  = await fetch(API + '/pb/dialogs/get', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: state.token, dialog_id: data.dialog.id }) });
+      const data2 = await res2.json();
+      if (data2.success) addDialogToUI(data2.dialog);
+      else               addDialogToUI(data.dialog);
+    }
+  } catch(e) {
+    // Offline — save for later
+    saveOffline(audioBlob);
+  } finally {
+    state.uploadQueue.pop();
+    updateUploadBadge();
+  }
+}
+
+function addDialogToUI(dialog) {
+  state.dialogs.unshift(dialog);
+  updateShiftStats();
+  renderDialogsList();
+}
+
+function updateShiftStats() {
+  const scores  = state.dialogs.filter(d => d.ai_score).map(d => d.ai_score);
+  const avg     = scores.length ? (scores.reduce((a,b) => a+b, 0) / scores.length).toFixed(1) : '—';
+  const viols   = state.dialogs.reduce((sum, d) => sum + (d.ai_result?.violations?.length || 0), 0);
+  document.getElementById('stat-dialogs').textContent   = state.dialogs.length;
+  document.getElementById('stat-score').textContent     = avg;
+  document.getElementById('stat-violations').textContent = viols;
+}
+
+function renderDialogsList() {
+  const el = document.getElementById('dialogs-list');
+  if (!state.dialogs.length) { el.innerHTML = `<div style="font-size:12px;color:var(--muted2);text-align:center;padding:16px">${t('no_dialogs')}</div>`; return; }
+  el.innerHTML = state.dialogs.slice(0, 5).map(d => {
+    const score    = d.ai_score || 0;
+    const cls      = score >= 75 ? 'ok' : score >= 50 ? 'warn' : 'bad';
+    const time     = new Date(d.recorded_at).toLocaleTimeString('uk', {hour:'2-digit', minute:'2-digit'});
+    return `<div class="dial-item" onclick="showDialog(${d.dialog_id || d.id})">
+      <div class="dial-score ${cls}">${score}</div>
+      <div style="flex:1"><div class="dial-time">${time}</div></div>
+      <div class="dial-arr">→</div>
+    </div>`;
+  }).join('');
+}
+
+function showDialog(id) {
+  const d = state.dialogs.find(x => (x.dialog_id || x.id) === id);
+  if (!d) return;
+  state.currentDialog = d;
+
+  const score  = d.ai_score || 0;
+  const cls    = score >= 75 ? 'hi' : score >= 50 ? 'mid' : 'lo';
+  const time   = new Date(d.recorded_at).toLocaleTimeString('uk', {hour:'2-digit', minute:'2-digit'});
+  const result = d.ai_result || {};
+
+  document.getElementById('s4-title').textContent  = `Діалог ${time}`;
+  document.getElementById('s4-score').textContent  = score;
+  document.getElementById('s4-circle').className   = `dlg-score-circle ${cls}`;
+  document.getElementById('s4-summary').textContent = result.summary || '—';
+  document.getElementById('s4-transcript').textContent = d.transcript || '—';
+
+  const viols = result.violations || [];
+  document.getElementById('s4-violations').innerHTML = viols.length
+    ? viols.map(v => `<div class="viol-item"><div class="viol-icon">⚠️</div><div><div class="viol-rule">${v}</div></div></div>`).join('')
+    : `<div style="font-size:12px;color:var(--green);padding:8px 0">${t('no_violations')}</div>`;
+
+  const strs = result.strengths || [];
+  document.getElementById('s4-strengths').innerHTML = strs.length
+    ? `<div style="padding:4px 0">${strs.map(s => `<div class="str-item"><div class="str-icon">✓</div><div class="str-text">${s}</div></div>`).join('')}</div>`
+    : `<div style="font-size:12px;color:var(--muted);padding:8px 0">—</div>`;
+
+  goTo('s4');
+}
+
+// ── UPLOAD BADGE ──────────────────────────────────────────────
+function updateUploadBadge() {
+  const badge = document.getElementById('upload-badge');
+  if (state.uploadQueue.length > 0) {
+    badge.classList.add('show');
+    document.getElementById('upload-count').textContent = state.uploadQueue.length;
+  } else {
+    badge.classList.remove('show');
+  }
+}
+
+// ── OFFLINE QUEUE ─────────────────────────────────────────────
+function saveOffline(blob) {
+  // Save to IndexedDB for later upload
+  const req = indexedDB.open('planb', 1);
+  req.onupgradeneeded = e => e.target.result.createObjectStore('queue', { autoIncrement: true });
+  req.onsuccess = e => {
+    const db = e.target.result;
+    db.transaction('queue', 'readwrite').objectStore('queue').add({ blob, token: state.token, userId: state.selectedEmployee?.user_id, ts: Date.now() });
+  };
+}
+
+async function flushOfflineQueue() {
+  const req = indexedDB.open('planb', 1);
+  req.onsuccess = e => {
+    const db    = e.target.result;
+    const store = db.transaction('queue', 'readwrite').objectStore('queue');
+    store.getAll().onsuccess = async ev => {
+      for (const item of ev.target.result) {
+        try {
+          const fd = new FormData();
+          fd.append('token', item.token);
+          fd.append('employee_user_id', item.userId);
+          fd.append('audio', item.blob, 'dialog.webm');
+          const res = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: fd });
+          if (res.ok) store.delete(item.id);
+        } catch(e) { break; }
+      }
+    };
+  };
+}
+
+// Flush when online
+window.addEventListener('online', flushOfflineQueue);
+
+// ── INIT ──────────────────────────────────────────────────────
+// Override goTo for s2 to load employees
+const _goTo = goTo;
+window.goTo = function(screenId) {
+  _goTo(screenId);
+  if (screenId === 's2') {
+    state.selectedEmployee = null;
+    document.getElementById('btn-start-shift').disabled = true;
+    document.getElementById('emp-search').value = '';
+    loadEmployees();
+  }
+};
+
+// Check saved token
+(async () => {
+  const token = localStorage.getItem('pb_token');
+  const user  = JSON.parse(localStorage.getItem('pb_user') || 'null');
+  if (!token || !user) return;
+  try {
+    const res  = await fetch(API + '/pb/auth/me', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token}) });
+    const data = await res.json();
+    if (data.success) {
+      state.token = token;
+      state.user  = data.user;
+      afterLogin();
+    } else {
+      localStorage.removeItem('pb_token');
+      localStorage.removeItem('pb_user');
+    }
+  } catch(e) {
+    // offline — use cached
+    if (user) { state.token = token; state.user = user; afterLogin(); }
+  }
+})();
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('s0').classList.contains('active')) doLogin();
+});
+
+// Flush offline queue on start
+flushOfflineQueue();
+applyTheme();
+applyLang();
+</script>
+</body>
+</html>
