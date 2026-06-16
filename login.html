@@ -216,6 +216,12 @@ const i18n = {
 let lang  = localStorage.getItem('pb_lang')  || 'uk';
 let theme = localStorage.getItem('pb_theme') || 'light';
 
+function getRedirect(role) {
+  if (role === 'admin')    return 'admin.html';
+  if (role === 'employee') return 'pwa/index.html';
+  return 'dashboard.html';
+}
+
 function applyTheme() {
   document.documentElement.setAttribute('data-theme', theme);
   document.getElementById('theme-icon-sun').style.display  = theme === 'dark'  ? 'block' : 'none';
@@ -248,7 +254,7 @@ function applyLang() {
   try {
     const res = await fetch(API+'/pb/auth/me', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token}) });
     const data = await res.json();
-    if (data.success) window.location.href = 'dashboard.html';
+    if (data.success) { window.location.href = getRedirect(data.user.role); return; }
     else { localStorage.removeItem('pb_token'); localStorage.removeItem('pb_user'); }
   } catch(e) {}
 })();
@@ -285,8 +291,10 @@ async function doLogin() {
     if(data.success) {
       localStorage.setItem('pb_token', data.token);
       localStorage.setItem('pb_user',  JSON.stringify(data.user));
+      localStorage.setItem('pb_token', data.token);
+      localStorage.setItem('pb_user',  JSON.stringify(data.user));
       showSuccess(t.ok_login);
-      setTimeout(()=>window.location.href='dashboard.html', 800);
+      setTimeout(()=>window.location.href=getRedirect(data.user.role), 800);
     } else showError(data.error||t.err_server);
   } catch(e) { showError(t.err_server); }
   finally    { setLoading('btn-login', false, 'btn_login'); }
@@ -310,8 +318,10 @@ async function doRegister() {
     if(data.success) {
       localStorage.setItem('pb_token', data.token);
       localStorage.setItem('pb_user',  JSON.stringify(data.user));
+      localStorage.setItem('pb_token', data.token);
+      localStorage.setItem('pb_user',  JSON.stringify(data.user));
       showSuccess(t.ok_register);
-      setTimeout(()=>window.location.href='dashboard.html', 800);
+      setTimeout(()=>window.location.href=getRedirect(data.user.role), 800);
     } else showError(data.error||t.err_server);
   } catch(e) { showError(t.err_server); }
   finally    { setLoading('btn-register', false, 'btn_register'); }
