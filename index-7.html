@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="uk" data-theme="light">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plan B — AI-аналітика діалогів персоналу</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --red: #E03C2F;
+  --red-dim: rgba(224,60,47,.10);
+  --red-border: rgba(224,60,47,.25);
+  --green: #16A34A;
+  --amber: #D97706;
+  --blue: #2563EB;
+  --bg0: #F0F0F3;
+  --bg1: #FFFFFF;
+  --bg2: #F5F5F8;
+  --bg3: #EBEBEF;
+  --bg4: #E0E0E6;
+  --border: rgba(0,0,0,.08);
+  --text: #111114;
+  --muted: #6B6B78;
+  --muted2: #ABABB8;
+  --font-mono: 'JetBrains Mono', monospace;
+}
+[data-theme="dark"] {
+  --bg0: #0C0C0F;
+  --bg1: #141417;
+  --bg2: #1C1C21;
+  --bg3: #242429;
+  --bg4: #2E2E35;
+  --border: rgba(255,255,255,.07);
+  --text: #F0F0F2;
+  --muted: #8A8A96;
+  --muted2: #52525C;
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{scroll-behavior:smooth}
+body{font-family:'Inter',sans-serif;background:var(--bg0);color:var(--text);font-size:14px;line-height:1.6;-webkit-font-smoothing:antialiased;transition:background .2s,color .2s}
+
+/* ── NAV ── */
+.nav{position:sticky;top:0;z-index:100;background:rgba(255,255,255,.85);backdrop-filter:blur(16px);border-bottom:1px solid var(--border);transition:background .2s}
+[data-theme="dark"] .nav{background:rgba(20,20,23,.85)}
+.nav-inner{max-width:1100px;margin:0 auto;padding:0 24px;height:56px;display:flex;align-items:center;gap:16px}
+.nav-logo{display:flex;align-items:center;gap:0;text-decoration:none}
+.nav-logo-text{font-family:var(--font-mono);font-weight:700;font-size:18px;color:var(--text);letter-spacing:-.03em}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.lang-bar{display:flex;background:var(--bg2);border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.lang-btn{padding:4px 9px;font-size:11px;font-weight:600;color:var(--muted);cursor:pointer;border:none;background:none;font-family:'Inter',sans-serif;transition:all .15s}
+.lang-btn.active{background:var(--red);color:#fff}
+.theme-btn{width:30px;height:30px;border-radius:8px;border:1px solid var(--border);background:var(--bg2);display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--muted);transition:all .15s}
+.theme-btn:hover{color:var(--text)}
+.theme-btn svg{width:14px;height:14px;fill:currentColor}
+.nav-login{padding:7px 16px;border-radius:8px;border:1px solid var(--border);background:var(--bg1);color:var(--text);font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-decoration:none}
+.nav-login:hover{border-color:var(--muted)}
+.nav-cta{padding:7px 16px;border-radius:8px;border:none;background:var(--red);color:#fff;font-size:12px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:opacity .15s;text-decoration:none}
+.nav-cta:hover{opacity:.88}
+
+/* ── HERO ── */
+.hero{max-width:1100px;margin:0 auto;padding:80px 24px 64px;text-align:center}
+.hero-badge{display:inline-flex;align-items:center;gap:6px;background:var(--red-dim);border:1px solid var(--red-border);color:var(--red);font-size:11px;font-weight:600;padding:4px 12px;border-radius:20px;margin-bottom:24px;letter-spacing:.04em;text-transform:uppercase}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.hero h1{font-size:clamp(32px,5vw,56px);font-weight:800;color:var(--text);letter-spacing:-.04em;line-height:1.1;margin-bottom:20px}
+.hero h1 span{color:var(--red)}
+.hero-sub{font-size:clamp(14px,2vw,18px);color:var(--muted);max-width:600px;margin:0 auto 36px;line-height:1.65}
+.hero-btns{display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap}
+.btn-hero{padding:13px 28px;border-radius:10px;font-size:14px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-decoration:none;display:inline-flex;align-items:center;gap:8px}
+.btn-hero.primary{background:var(--red);color:#fff;border:none}
+.btn-hero.primary:hover{opacity:.88;transform:translateY(-1px)}
+.btn-hero.secondary{background:var(--bg1);color:var(--text);border:1px solid var(--border)}
+.btn-hero.secondary:hover{border-color:var(--muted);transform:translateY(-1px)}
+
+/* ── STATS ── */
+.stats{max-width:1100px;margin:0 auto;padding:0 24px 64px;display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px}
+.stat-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:24px;text-align:center}
+.stat-num{font-family:var(--font-mono);font-size:36px;font-weight:700;color:var(--red);letter-spacing:-.04em;margin-bottom:4px}
+.stat-label{font-size:13px;color:var(--muted)}
+
+/* ── HOW ── */
+.section{max-width:1100px;margin:0 auto;padding:64px 24px}
+.section-eyebrow{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--red);margin-bottom:10px}
+.section-title{font-size:clamp(24px,3vw,36px);font-weight:700;color:var(--text);letter-spacing:-.03em;margin-bottom:12px;line-height:1.2}
+.section-sub{font-size:15px;color:var(--muted);max-width:520px;line-height:1.65;margin-bottom:40px}
+
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:16px}
+.step{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:24px}
+.step-num{font-family:var(--font-mono);font-size:11px;font-weight:700;color:var(--red);letter-spacing:.08em;margin-bottom:12px}
+.step-icon{font-size:28px;margin-bottom:12px}
+.step-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+.step-desc{font-size:13px;color:var(--muted);line-height:1.55}
+
+/* ── FEATURES ── */
+.features{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:16px}
+.feat{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:24px}
+.feat-icon{width:40px;height:40px;border-radius:10px;background:var(--red-dim);display:flex;align-items:center;justify-content:center;margin-bottom:14px;font-size:20px}
+.feat-title{font-size:14px;font-weight:600;color:var(--text);margin-bottom:6px}
+.feat-desc{font-size:13px;color:var(--muted);line-height:1.55}
+
+/* ── PRICING ── */
+.pricing{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.price-card{background:var(--bg1);border:1px solid var(--border);border-radius:14px;padding:28px}
+.price-card.featured{border-color:var(--red);border-width:2px}
+.price-badge{display:inline-block;background:var(--red);color:#fff;font-size:10px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:3px 10px;border-radius:20px;margin-bottom:12px}
+.price-name{font-size:13px;font-weight:600;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.price-amount{font-family:var(--font-mono);font-size:32px;font-weight:700;color:var(--text);letter-spacing:-.04em;margin-bottom:4px}
+.price-period{font-size:12px;color:var(--muted2);margin-bottom:20px}
+.price-features{display:flex;flex-direction:column;gap:8px;margin-bottom:24px}
+.price-feat{font-size:13px;color:var(--muted);padding-left:18px;position:relative}
+.price-feat::before{content:'→';position:absolute;left:0;color:var(--red);font-size:11px;top:1px}
+.btn-price{width:100%;padding:10px;border-radius:8px;font-size:13px;font-weight:600;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-decoration:none;display:block;text-align:center}
+.btn-price.primary{background:var(--red);color:#fff;border:none}
+.btn-price.primary:hover{opacity:.88}
+.btn-price.secondary{background:var(--bg2);color:var(--text);border:1px solid var(--border)}
+.btn-price.secondary:hover{border-color:var(--muted)}
+
+/* ── CTA ── */
+.cta-section{background:var(--red);padding:64px 24px;text-align:center}
+.cta-inner{max-width:600px;margin:0 auto}
+.cta-title{font-size:clamp(24px,3vw,36px);font-weight:800;color:#fff;letter-spacing:-.03em;margin-bottom:12px}
+.cta-sub{font-size:15px;color:rgba(255,255,255,.75);margin-bottom:32px;line-height:1.6}
+.btn-cta-white{padding:13px 32px;border-radius:10px;border:none;background:#fff;color:var(--red);font-size:14px;font-weight:700;cursor:pointer;font-family:'Inter',sans-serif;transition:all .15s;text-decoration:none;display:inline-block}
+.btn-cta-white:hover{opacity:.92;transform:translateY(-1px)}
+
+/* ── FOOTER ── */
+.footer{max-width:1100px;margin:0 auto;padding:32px 24px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;border-top:1px solid var(--border)}
+.footer-logo{font-family:var(--font-mono);font-size:14px;font-weight:700;color:var(--text)}
+.footer-copy{font-size:12px;color:var(--muted2)}
+
+/* divider */
+.divider{height:1px;background:var(--border);max-width:1100px;margin:0 auto}
+
+@media(max-width:600px){
+  .hero{padding:48px 16px 40px}
+  .stats,.section{padding-left:16px;padding-right:16px}
+  .nav-login{display:none}
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-inner">
+    <a href="/" class="nav-logo">
+      <span class="nav-logo-text">Plan</span>
+      <svg width="13" height="20" viewBox="0 0 11 17" fill="none" style="margin:0 3px;position:relative;top:1px">
+        <rect x="1.5" y="0" width="8" height="9.5" rx="4" fill="#E03C2F"/>
+        <path d="M0 8a5.5 5.5 0 0011 0" stroke="#E03C2F" stroke-width="1.5" stroke-linecap="round" fill="none"/>
+        <line x1="5.5" y1="13.5" x2="5.5" y2="16" stroke="#E03C2F" stroke-width="1.5" stroke-linecap="round"/>
+        <line x1="2" y1="16" x2="9" y2="16" stroke="#E03C2F" stroke-width="1.5" stroke-linecap="round"/>
+      </svg>
+      <span class="nav-logo-text">B</span>
+    </a>
+
+    <div class="nav-right">
+      <div class="lang-bar">
+        <button class="lang-btn active" onclick="setLang('uk')">УКР</button>
+        <button class="lang-btn" onclick="setLang('ru')">РУС</button>
+        <button class="lang-btn" onclick="setLang('en')">ENG</button>
+      </div>
+      <button class="theme-btn" onclick="toggleTheme()">
+        <svg id="icon-sun" viewBox="0 0 24 24" style="display:none"><path d="M12 17a5 5 0 100-10 5 5 0 000 10zm0-13a1 1 0 011 1v1a1 1 0 01-2 0V5a1 1 0 011-1zm0 14a1 1 0 011 1v1a1 1 0 01-2 0v-1a1 1 0 011-1zm-7-7a1 1 0 010 2H4a1 1 0 010-2h1zm14 0a1 1 0 010 2h-1a1 1 0 010-2h1zM6.22 6.22a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zm9.9 9.9a1 1 0 011.42 0l.7.7a1 1 0 01-1.42 1.42l-.7-.7a1 1 0 010-1.42zm-9.2 1.42a1 1 0 010-1.42l.7-.7a1 1 0 011.42 1.42l-.7.7a1 1 0 01-1.42 0zM16.12 7.34a1 1 0 010-1.42l.7-.7a1 1 0 011.42 1.42l-.7.7a1 1 0 01-1.42 0z"/></svg>
+        <svg id="icon-moon" viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1111.21 3a7 7 0 009.79 9.79z"/></svg>
+      </button>
+      <a href="login.html" class="nav-login" data-i18n="nav_login">Увійти</a>
+      <a href="login.html" class="nav-cta" data-i18n="nav_cta">Спробувати →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-badge">
+    <span class="hero-badge-dot"></span>
+    <span data-i18n="badge">AI · Whisper · GPT-4o</span>
+  </div>
+  <h1 data-i18n="hero_title">AI слухає кожен діалог.<br>Ви бачите <span>результат</span>.</h1>
+  <p class="hero-sub" data-i18n="hero_sub">Plan B автоматично записує, транскрибує та аналізує розмови персоналу з клієнтами. Нарушення скрипту, рейтинги, звіти — без ручної роботи.</p>
+  <div class="hero-btns">
+    <a href="login.html" class="btn-hero primary" data-i18n="hero_cta">Почати безкоштовно →</a>
+    <a href="#how" class="btn-hero secondary" data-i18n="hero_how">Як це працює</a>
+  </div>
+</section>
+
+<!-- STATS -->
+<div class="stats">
+  <div class="stat-card">
+    <div class="stat-num">95%</div>
+    <div class="stat-label" data-i18n="stat1">точність транскрипції</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">&lt;30с</div>
+    <div class="stat-label" data-i18n="stat2">аналіз одного діалогу</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">24/7</div>
+    <div class="stat-label" data-i18n="stat3">моніторинг без участі людини</div>
+  </div>
+  <div class="stat-card">
+    <div class="stat-num">↑23%</div>
+    <div class="stat-label" data-i18n="stat4">зростання якості сервісу</div>
+  </div>
+</div>
+
+<div class="divider"></div>
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-eyebrow" data-i18n="how_eyebrow">Як це працює</div>
+  <div class="section-title" data-i18n="how_title">Від діалогу до звіту — автоматично</div>
+  <p class="section-sub" data-i18n="how_sub">Планшет на точці, сервер у хмарі, дашборд у браузері. Три компоненти — одна система.</p>
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-icon">📱</div>
+      <div class="step-title" data-i18n="step1_title">Сотрудник запускає зміну</div>
+      <div class="step-desc" data-i18n="step1_desc">Відкриває PWA на планшеті, обирає себе зі списку. Детектор голосу починає слухати.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-icon">🎙️</div>
+      <div class="step-title" data-i18n="step2_title">Запис кожного діалогу</div>
+      <div class="step-desc" data-i18n="step2_desc">VAD фіксує початок і кінець розмови. Кожен діалог — окремий аудіо-файл.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-icon">⚡</div>
+      <div class="step-title" data-i18n="step3_title">Whisper транскрибує</div>
+      <div class="step-desc" data-i18n="step3_desc">Аудіо йде на сервер. OpenAI Whisper перетворює мовлення на текст за секунди.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-icon">🤖</div>
+      <div class="step-title" data-i18n="step4_title">GPT-4o аналізує по скрипту</div>
+      <div class="step-desc" data-i18n="step4_desc">AI перевіряє кожен пункт вашого скрипту продажів. Оцінка, порушення, сильні сторони.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">05</div>
+      <div class="step-icon">📊</div>
+      <div class="step-title" data-i18n="step5_title">Ви бачите результат</div>
+      <div class="step-desc" data-i18n="step5_desc">Рейтинги, динаміка, топ порушень — у зручному дашборді з будь-якого пристрою.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- FEATURES -->
+<section class="section" id="features">
+  <div class="section-eyebrow" data-i18n="feat_eyebrow">Можливості</div>
+  <div class="section-title" data-i18n="feat_title">Все що потрібно власнику</div>
+  <p class="section-sub" data-i18n="feat_sub">Від запису до рекомендацій по навчанню — в одному продукті.</p>
+  <div class="features">
+    <div class="feat">
+      <div class="feat-icon">🎯</div>
+      <div class="feat-title" data-i18n="f1_title">Власний скрипт продажів</div>
+      <div class="feat-desc" data-i18n="f1_desc">Ви самі задаєте правила. AI перевіряє кожен діалог по вашому скрипту і фіксує відхилення.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🏆</div>
+      <div class="feat-title" data-i18n="f2_title">Рейтинг співробітників</div>
+      <div class="feat-desc" data-i18n="f2_desc">Таблиця з оцінками за день, тиждень, місяць. Медалі для кращих. Динаміка зростання.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">⚠️</div>
+      <div class="feat-title" data-i18n="f3_title">Аналіз порушень</div>
+      <div class="feat-desc" data-i18n="f3_desc">Які правила порушуються найчастіше, у кого і в який час — зведена аналітика.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📄</div>
+      <div class="feat-title" data-i18n="f4_title">Звіти та транскрипти</div>
+      <div class="feat-desc" data-i18n="f4_desc">PDF-звіт по зміні і місяцю. Повний текст кожного діалогу доступний в один клік.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">🔔</div>
+      <div class="feat-title" data-i18n="f5_title">Миттєві сповіщення</div>
+      <div class="feat-desc" data-i18n="f5_desc">Telegram або SMS якщо оцінка нижче порогу, пристрій офлайн або зміна не запущена.</div>
+    </div>
+    <div class="feat">
+      <div class="feat-icon">📵</div>
+      <div class="feat-title" data-i18n="f6_title">Офлайн-режим</div>
+      <div class="feat-desc" data-i18n="f6_desc">Немає інтернету — аудіо зберігається локально. Як тільки зв'язок з'явиться — все відправиться автоматично.</div>
+    </div>
+  </div>
+</section>
+
+<div class="divider"></div>
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-eyebrow" data-i18n="price_eyebrow">Тарифи</div>
+  <div class="section-title" data-i18n="price_title">Прозора ціна</div>
+  <p class="section-sub" data-i18n="price_sub">Без прихованих платежів. Перші 14 днів — безкоштовно.</p>
+  <div class="pricing">
+    <div class="price-card">
+      <div class="price-name" data-i18n="plan1_name">Старт</div>
+      <div class="price-amount">2 200</div>
+      <div class="price-period" data-i18n="plan_period">грн / місяць</div>
+      <div class="price-features">
+        <div class="price-feat" data-i18n="p1f1">1 точка продажів</div>
+        <div class="price-feat" data-i18n="p1f2">до 5 співробітників</div>
+        <div class="price-feat" data-i18n="p1f3">2 000 хв транскрипції</div>
+        <div class="price-feat" data-i18n="p1f4">Базовий дашборд</div>
+        <div class="price-feat" data-i18n="p1f5">Email підтримка</div>
+      </div>
+      <a href="login.html" class="btn-price secondary" data-i18n="btn_start">Почати →</a>
+    </div>
+    <div class="price-card featured">
+      <div class="price-badge" data-i18n="popular">Популярний</div>
+      <div class="price-name" data-i18n="plan2_name">Бізнес</div>
+      <div class="price-amount">4 500</div>
+      <div class="price-period" data-i18n="plan_period">грн / місяць</div>
+      <div class="price-features">
+        <div class="price-feat" data-i18n="p2f1">до 3 точок продажів</div>
+        <div class="price-feat" data-i18n="p2f2">необмежено співробітників</div>
+        <div class="price-feat" data-i18n="p2f3">5 000 хв транскрипції</div>
+        <div class="price-feat" data-i18n="p2f4">Повна аналітика + PDF</div>
+        <div class="price-feat" data-i18n="p2f5">Telegram сповіщення</div>
+        <div class="price-feat" data-i18n="p2f6">Пріоритетна підтримка</div>
+      </div>
+      <a href="login.html" class="btn-price primary" data-i18n="btn_start">Почати →</a>
+    </div>
+    <div class="price-card">
+      <div class="price-name" data-i18n="plan3_name">Enterprise</div>
+      <div class="price-amount">від $800</div>
+      <div class="price-period" data-i18n="plan3_period">/ рік (On-Premise)</div>
+      <div class="price-features">
+        <div class="price-feat" data-i18n="p3f1">Встановлення на ваш сервер</div>
+        <div class="price-feat" data-i18n="p3f2">Дані лише у вас</div>
+        <div class="price-feat" data-i18n="p3f3">Необмежено всього</div>
+        <div class="price-feat" data-i18n="p3f4">Повний офлайн (Llama 3)</div>
+        <div class="price-feat" data-i18n="p3f5">Кастомізація під бізнес</div>
+      </div>
+      <a href="login.html" class="btn-price secondary" data-i18n="btn_contact">Зв'язатись →</a>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<div class="cta-section">
+  <div class="cta-inner">
+    <div class="cta-title" data-i18n="cta_title">Почніть сьогодні.<br>Перші 14 днів безкоштовно.</div>
+    <p class="cta-sub" data-i18n="cta_sub">Реєстрація займає 2 хвилини. Ніякої кредитної картки.</p>
+    <a href="login.html" class="btn-cta-white" data-i18n="cta_btn">Спробувати безкоштовно →</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer">
+    <div class="footer-logo">Plan B</div>
+    <div class="footer-copy" data-i18n="footer">© 2025 Plan B. Полтава, Україна.</div>
+  </div>
+</footer>
+
+<script>
+const i18n = {
+  uk: {
+    nav_login:'Увійти', nav_cta:'Спробувати →',
+    badge:'AI · Whisper · GPT-4o',
+    hero_title:'AI слухає кожен діалог.<br>Ви бачите <span>результат</span>.',
+    hero_sub:'Plan B автоматично записує, транскрибує та аналізує розмови персоналу з клієнтами. Порушення скрипту, рейтинги, звіти — без ручної роботи.',
+    hero_cta:'Почати безкоштовно →', hero_how:'Як це працює',
+    stat1:'точність транскрипції', stat2:'аналіз одного діалогу', stat3:'моніторинг без участі людини', stat4:'зростання якості сервісу',
+    how_eyebrow:'Як це працює', how_title:'Від діалогу до звіту — автоматично',
+    how_sub:'Планшет на точці, сервер у хмарі, дашборд у браузері. Три компоненти — одна система.',
+    step1_title:'Сотрудник запускає зміну', step1_desc:'Відкриває PWA на планшеті, обирає себе зі списку. Детектор голосу починає слухати.',
+    step2_title:'Запис кожного діалогу', step2_desc:'VAD фіксує початок і кінець розмови. Кожен діалог — окремий аудіо-файл.',
+    step3_title:'Whisper транскрибує', step3_desc:'Аудіо йде на сервер. OpenAI Whisper перетворює мовлення на текст за секунди.',
+    step4_title:'GPT-4o аналізує по скрипту', step4_desc:'AI перевіряє кожен пункт вашого скрипту продажів. Оцінка, порушення, сильні сторони.',
+    step5_title:'Ви бачите результат', step5_desc:'Рейтинги, динаміка, топ порушень — у зручному дашборді з будь-якого пристрою.',
+    feat_eyebrow:'Можливості', feat_title:'Все що потрібно власнику',
+    feat_sub:'Від запису до рекомендацій по навчанню — в одному продукті.',
+    f1_title:'Власний скрипт продажів', f1_desc:'Ви самі задаєте правила. AI перевіряє кожен діалог по вашому скрипту і фіксує відхилення.',
+    f2_title:'Рейтинг співробітників', f2_desc:'Таблиця з оцінками за день, тиждень, місяць. Медалі для кращих. Динаміка зростання.',
+    f3_title:'Аналіз порушень', f3_desc:'Які правила порушуються найчастіше, у кого і в який час — зведена аналітика.',
+    f4_title:'Звіти та транскрипти', f4_desc:'PDF-звіт по зміні і місяцю. Повний текст кожного діалогу доступний в один клік.',
+    f5_title:'Миттєві сповіщення', f5_desc:'Telegram або SMS якщо оцінка нижче порогу, пристрій офлайн або зміна не запущена.',
+    f6_title:'Офлайн-режим', f6_desc:"Немає інтернету — аудіо зберігається локально. Як тільки зв'язок з'явиться — все відправиться автоматично.",
+    price_eyebrow:'Тарифи', price_title:'Прозора ціна', price_sub:'Без прихованих платежів. Перші 14 днів — безкоштовно.',
+    plan1_name:'Старт', plan2_name:'Бізнес', plan3_name:'Enterprise',
+    plan_period:'грн / місяць', plan3_period:'/ рік (On-Premise)',
+    p1f1:'1 точка продажів', p1f2:'до 5 співробітників', p1f3:'2 000 хв транскрипції', p1f4:'Базовий дашборд', p1f5:'Email підтримка',
+    p2f1:'до 3 точок продажів', p2f2:'необмежено співробітників', p2f3:'5 000 хв транскрипції', p2f4:'Повна аналітика + PDF', p2f5:'Telegram сповіщення', p2f6:'Пріоритетна підтримка',
+    p3f1:'Встановлення на ваш сервер', p3f2:'Дані лише у вас', p3f3:'Необмежено всього', p3f4:'Повний офлайн (Llama 3)', p3f5:'Кастомізація під бізнес',
+    btn_start:'Почати →', btn_contact:"Зв'язатись →", popular:'Популярний',
+    cta_title:'Почніть сьогодні.<br>Перші 14 днів безкоштовно.', cta_sub:'Реєстрація займає 2 хвилини. Ніякої кредитної картки.', cta_btn:'Спробувати безкоштовно →',
+    footer:'© 2025 Plan B. Полтава, Україна.'
+  },
+  ru: {
+    nav_login:'Войти', nav_cta:'Попробовать →',
+    badge:'AI · Whisper · GPT-4o',
+    hero_title:'AI слушает каждый диалог.<br>Вы видите <span>результат</span>.',
+    hero_sub:'Plan B автоматически записывает, транскрибирует и анализирует разговоры персонала с клиентами. Нарушения скрипта, рейтинги, отчёты — без ручной работы.',
+    hero_cta:'Начать бесплатно →', hero_how:'Как это работает',
+    stat1:'точность транскрипции', stat2:'анализ одного диалога', stat3:'мониторинг без участия человека', stat4:'рост качества сервиса',
+    how_eyebrow:'Как это работает', how_title:'От диалога до отчёта — автоматически',
+    how_sub:'Планшет на точке, сервер в облаке, дашборд в браузере. Три компонента — одна система.',
+    step1_title:'Сотрудник запускает смену', step1_desc:'Открывает PWA на планшете, выбирает себя из списка. Детектор голоса начинает слушать.',
+    step2_title:'Запись каждого диалога', step2_desc:'VAD фиксирует начало и конец разговора. Каждый диалог — отдельный аудио-файл.',
+    step3_title:'Whisper транскрибирует', step3_desc:'Аудио идёт на сервер. OpenAI Whisper преобразует речь в текст за секунды.',
+    step4_title:'GPT-4o анализирует по скрипту', step4_desc:'AI проверяет каждый пункт вашего скрипта продаж. Оценка, нарушения, сильные стороны.',
+    step5_title:'Вы видите результат', step5_desc:'Рейтинги, динамика, топ нарушений — в удобном дашборде с любого устройства.',
+    feat_eyebrow:'Возможности', feat_title:'Всё что нужно владельцу',
+    feat_sub:'От записи до рекомендаций по обучению — в одном продукте.',
+    f1_title:'Собственный скрипт продаж', f1_desc:'Вы сами задаёте правила. AI проверяет каждый диалог по вашему скрипту и фиксирует отклонения.',
+    f2_title:'Рейтинг сотрудников', f2_desc:'Таблица с оценками за день, неделю, месяц. Медали для лучших. Динамика роста.',
+    f3_title:'Анализ нарушений', f3_desc:'Какие правила нарушаются чаще всего, у кого и в какое время — сводная аналитика.',
+    f4_title:'Отчёты и транскрипты', f4_desc:'PDF-отчёт по смене и месяцу. Полный текст каждого диалога доступен в один клик.',
+    f5_title:'Мгновенные уведомления', f5_desc:'Telegram или SMS если оценка ниже порога, устройство офлайн или смена не запущена.',
+    f6_title:'Офлайн-режим', f6_desc:'Нет интернета — аудио сохраняется локально. Как только связь появится — всё отправится автоматически.',
+    price_eyebrow:'Тарифы', price_title:'Прозрачная цена', price_sub:'Без скрытых платежей. Первые 14 дней — бесплатно.',
+    plan1_name:'Старт', plan2_name:'Бизнес', plan3_name:'Enterprise',
+    plan_period:'грн / месяц', plan3_period:'/ год (On-Premise)',
+    p1f1:'1 точка продаж', p1f2:'до 5 сотрудников', p1f3:'2 000 мин транскрипции', p1f4:'Базовый дашборд', p1f5:'Email поддержка',
+    p2f1:'до 3 точек продаж', p2f2:'неограниченно сотрудников', p2f3:'5 000 мин транскрипции', p2f4:'Полная аналитика + PDF', p2f5:'Telegram уведомления', p2f6:'Приоритетная поддержка',
+    p3f1:'Установка на ваш сервер', p3f2:'Данные только у вас', p3f3:'Неограниченно всего', p3f4:'Полный офлайн (Llama 3)', p3f5:'Кастомизация под бизнес',
+    btn_start:'Начать →', btn_contact:'Написать →', popular:'Популярный',
+    cta_title:'Начните сегодня.<br>Первые 14 дней бесплатно.', cta_sub:'Регистрация занимает 2 минуты. Без кредитной карты.', cta_btn:'Попробовать бесплатно →',
+    footer:'© 2025 Plan B. Полтава, Украина.'
+  },
+  en: {
+    nav_login:'Sign in', nav_cta:'Try free →',
+    badge:'AI · Whisper · GPT-4o',
+    hero_title:'AI listens to every dialog.<br>You see the <span>results</span>.',
+    hero_sub:'Plan B automatically records, transcribes and analyzes staff conversations with customers. Script violations, ratings, reports — no manual work.',
+    hero_cta:'Start for free →', hero_how:'How it works',
+    stat1:'transcription accuracy', stat2:'dialog analysis time', stat3:'monitoring without human input', stat4:'service quality growth',
+    how_eyebrow:'How it works', how_title:'From dialog to report — automatically',
+    how_sub:'Tablet at the point of sale, server in the cloud, dashboard in the browser. Three components — one system.',
+    step1_title:'Employee starts a shift', step1_desc:'Opens the PWA on the tablet, selects themselves from the list. The voice detector starts listening.',
+    step2_title:'Records every dialog', step2_desc:'VAD captures the start and end of each conversation. Every dialog is a separate audio file.',
+    step3_title:'Whisper transcribes', step3_desc:'Audio goes to the server. OpenAI Whisper converts speech to text in seconds.',
+    step4_title:'GPT-4o analyzes by script', step4_desc:'AI checks every point of your sales script. Score, violations, strengths.',
+    step5_title:'You see the results', step5_desc:'Ratings, trends, top violations — in a convenient dashboard from any device.',
+    feat_eyebrow:'Features', feat_title:'Everything an owner needs',
+    feat_sub:'From recording to training recommendations — in one product.',
+    f1_title:'Custom sales script', f1_desc:'You define the rules. AI checks every dialog against your script and captures deviations.',
+    f2_title:'Employee ratings', f2_desc:'Score table by day, week, month. Medals for top performers. Growth dynamics.',
+    f3_title:'Violations analysis', f3_desc:'Which rules are broken most often, by whom and at what time — consolidated analytics.',
+    f4_title:'Reports and transcripts', f4_desc:'PDF report per shift and month. Full text of every dialog available in one click.',
+    f5_title:'Instant notifications', f5_desc:'Telegram or SMS if score drops below threshold, device goes offline or shift not started.',
+    f6_title:'Offline mode', f6_desc:"No internet — audio is stored locally. As soon as connection returns — everything is sent automatically.",
+    price_eyebrow:'Pricing', price_title:'Transparent pricing', price_sub:'No hidden fees. First 14 days free.',
+    plan1_name:'Starter', plan2_name:'Business', plan3_name:'Enterprise',
+    plan_period:'UAH / month', plan3_period:'/ year (On-Premise)',
+    p1f1:'1 point of sale', p1f2:'up to 5 employees', p1f3:'2 000 min transcription', p1f4:'Basic dashboard', p1f5:'Email support',
+    p2f1:'up to 3 points of sale', p2f2:'unlimited employees', p2f3:'5 000 min transcription', p2f4:'Full analytics + PDF', p2f5:'Telegram notifications', p2f6:'Priority support',
+    p3f1:'Install on your server', p3f2:'Your data stays local', p3f3:'Unlimited everything', p3f4:'Full offline (Llama 3)', p3f5:'Custom development',
+    btn_start:'Get started →', btn_contact:'Contact us →', popular:'Popular',
+    cta_title:'Start today.<br>First 14 days free.', cta_sub:'Registration takes 2 minutes. No credit card required.', cta_btn:'Try for free →',
+    footer:'© 2025 Plan B. Poltava, Ukraine.'
+  }
+};
+
+let lang  = localStorage.getItem('pb_lang')  || 'uk';
+let theme = localStorage.getItem('pb_theme') || 'light';
+
+function applyTheme() {
+  document.documentElement.setAttribute('data-theme', theme);
+  document.getElementById('icon-sun').style.display  = theme === 'dark'  ? 'block' : 'none';
+  document.getElementById('icon-moon').style.display = theme === 'light' ? 'block' : 'none';
+}
+
+function toggleTheme() {
+  theme = theme === 'light' ? 'dark' : 'light';
+  localStorage.setItem('pb_theme', theme);
+  applyTheme();
+}
+
+function setLang(l) {
+  lang = l;
+  localStorage.setItem('pb_lang', l);
+  applyLang();
+}
+
+function applyLang() {
+  const t = i18n[lang];
+  document.querySelectorAll('[data-i18n]').forEach(el => {
+    const key = el.dataset.i18n;
+    if (t[key]) el.innerHTML = t[key];
+  });
+  document.querySelectorAll('.lang-btn').forEach(b =>
+    b.classList.toggle('active', b.getAttribute('onclick').includes("'"+lang+"'"))
+  );
+  document.documentElement.lang = lang;
+}
+
+// redirect if already logged in
+(async () => {
+  const token = localStorage.getItem('pb_token');
+  if (!token) return;
+  try {
+    const res = await fetch('https://primary-production-4b93e.up.railway.app/webhook/pb/auth/me', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({token})
+    });
+    const data = await res.json();
+    if (data.success) {
+      document.querySelector('.nav-login').textContent = i18n[lang].nav_login;
+      document.querySelector('.nav-login').href = 'dashboard.html';
+      document.querySelector('.nav-cta').textContent = 'Dashboard →';
+      document.querySelector('.nav-cta').href = 'dashboard.html';
+    }
+  } catch(e) {}
+})();
+
+applyTheme();
+applyLang();
+</script>
+</body>
+</html>
