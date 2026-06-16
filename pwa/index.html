@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="uk" data-theme="light">
 <head>
@@ -812,7 +811,8 @@ async function uploadDialog(audioBlob) {
     const data = await res.json();
     if (data.success) {
       // Fetch full dialog details
-      const res2  = await fetch(API + '/pb/dialogs/get', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: state.token, dialog_id: data.dialog.id }) });
+      const dialogId = data.dialog.dialog_id || data.dialog.id;
+      const res2  = await fetch(API + "/pb/dialogs/get", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ token: state.token, dialog_id: dialogId }) });
       const data2 = await res2.json();
       if (data2.success) addDialogToUI(data2.dialog);
       else               addDialogToUI(data.dialog);
