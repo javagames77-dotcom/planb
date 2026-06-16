@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>VAD Test</title>
+<title>VAD Test — Plan B</title>
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: monospace; background: #0f0f12; color: #e0e0e0; padding: 20px; font-size: 13px; }
@@ -13,88 +13,71 @@ button { padding: 10px 20px; border-radius: 8px; border: none; font-family: mono
 #btn-start { background: #E03C2F; color: #fff; }
 #btn-stop  { background: #333; color: #aaa; }
 #btn-clear { background: #222; color: #666; }
-
-.meter-wrap { margin-bottom: 16px; }
-.meter-label { color: #666; margin-bottom: 4px; font-size: 11px; }
-.meter { height: 8px; background: #222; border-radius: 4px; overflow: hidden; margin-bottom: 4px; }
-.meter-fill { height: 100%; border-radius: 4px; transition: width .05s; background: #E03C2F; }
-.threshold-line { font-size: 11px; color: #555; }
-
-.vad-state { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
-.vad-state.idle     { background: #222; color: #666; }
-.vad-state.listening{ background: #1a2a1a; color: #4ade80; }
-.vad-state.recording{ background: #2a1a1a; color: #E03C2F; }
-.vad-state.uploading{ background: #1a1a2a; color: #60a5fa; }
-.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.dot.blink { animation: blink .8s infinite; }
-@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
-
 .settings { background: #1a1a1f; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .setting { display: flex; flex-direction: column; gap: 4px; }
 .setting label { font-size: 11px; color: #666; }
 .setting input { background: #222; border: 1px solid #333; border-radius: 6px; padding: 6px 10px; color: #e0e0e0; font-family: monospace; font-size: 13px; outline: none; }
 .setting input:focus { border-color: #E03C2F; }
 .setting .val { font-size: 11px; color: #E03C2F; }
-
-.log { background: #111; border: 1px solid #2a2a35; border-radius: 8px; padding: 10px; height: 300px; overflow-y: auto; }
+.vad-state { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+.vad-state.idle      { background: #222; color: #666; }
+.vad-state.listening { background: #1a2a1a; color: #4ade80; }
+.vad-state.recording { background: #2a1a1a; color: #E03C2F; }
+.vad-state.uploading { background: #1a1a2a; color: #60a5fa; }
+.dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.dot.blink { animation: blink .8s infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
+.log { background: #111; border: 1px solid #2a2a35; border-radius: 8px; padding: 10px; height: 300px; overflow-y: auto; margin-bottom: 16px; }
 .log-entry { padding: 3px 0; border-bottom: 1px solid #1a1a1a; line-height: 1.5; }
-.log-entry .ts   { color: #444; margin-right: 8px; }
-.log-entry.info  .msg { color: #e0e0e0; }
-.log-entry.ok    .msg { color: #4ade80; }
-.log-entry.warn  .msg { color: #fbbf24; }
-.log-entry.err   .msg { color: #f87171; }
-.log-entry.blue  .msg { color: #60a5fa; }
-
-.dialogs { margin-top: 16px; }
+.log-entry .ts  { color: #444; margin-right: 8px; }
+.log-entry.info .msg { color: #e0e0e0; }
+.log-entry.ok   .msg { color: #4ade80; }
+.log-entry.warn .msg { color: #fbbf24; }
+.log-entry.err  .msg { color: #f87171; }
+.log-entry.blue .msg { color: #60a5fa; }
 .dialog-card { background: #1a1a1f; border: 1px solid #2a2a35; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
 .dialog-card .score { font-size: 20px; font-weight: 700; color: #E03C2F; }
 .dialog-card .meta  { font-size: 11px; color: #555; margin-bottom: 6px; }
-.dialog-card .transcript { font-size: 12px; color: #aaa; line-height: 1.5; }
+.dialog-card .text  { font-size: 12px; color: #aaa; line-height: 1.5; margin-top: 6px; }
 </style>
 </head>
 <body>
 
-<h1>🎙 Plan B — VAD Test</h1>
+<h1>🎙 Plan B — Silero VAD Test</h1>
 
 <div class="settings">
   <div class="setting">
-    <label>Поріг гучності (0-1)</label>
-    <input type="range" id="threshold" min="0.01" max="0.15" step="0.005" value="0.04" oninput="updateSettings()">
-    <span class="val" id="threshold-val">0.04</span>
-  </div>
-  <div class="setting">
-    <label>Пауза до зупинки (мс)</label>
-    <input type="range" id="silence-dur" min="500" max="4000" step="100" value="2000" oninput="updateSettings()">
-    <span class="val" id="silence-val">2000 мс</span>
-  </div>
-  <div class="setting">
-    <label>Мін. розмір файлу (байт)</label>
-    <input type="number" id="min-size" value="8000" min="1000" max="50000">
-  </div>
-  <div class="setting">
     <label>Token</label>
-    <input type="text" id="token" placeholder="вставте токен...">
+    <input type="text" id="token" value="582a1fd3bba882b360419fb61c296cba6a0872297369a431afecd972a6122b7ca751d8fa23f66e4692b1db7f6108e910">
   </div>
   <div class="setting">
     <label>Employee User ID</label>
     <input type="number" id="emp-id" value="4">
   </div>
   <div class="setting">
-    <label>API URL</label>
-    <input type="text" id="api-url" value="https://primary-production-4b93e.up.railway.app/webhook">
+    <label>positiveSpeechThreshold (0-1)</label>
+    <input type="range" id="pos-threshold" min="0.1" max="0.99" step="0.05" value="0.5" oninput="document.getElementById('pos-val').textContent=this.value">
+    <span class="val" id="pos-val">0.5</span>
+  </div>
+  <div class="setting">
+    <label>negativeSpeechThreshold (0-1)</label>
+    <input type="range" id="neg-threshold" min="0.05" max="0.9" step="0.05" value="0.35" oninput="document.getElementById('neg-val').textContent=this.value">
+    <span class="val" id="neg-val">0.35</span>
+  </div>
+  <div class="setting">
+    <label>minSpeechFrames</label>
+    <input type="number" id="min-frames" value="3" min="1" max="20">
+  </div>
+  <div class="setting">
+    <label>preSpeechPadFrames</label>
+    <input type="number" id="pad-frames" value="1" min="0" max="10">
   </div>
 </div>
 
 <div class="controls">
   <button id="btn-start" onclick="startVAD()">▶ Старт</button>
-  <button id="btn-stop"  onclick="stopVAD()">■ Стоп</button>
-  <button id="btn-clear" onclick="clearLog()">✕ Очистити лог</button>
-</div>
-
-<div class="meter-wrap">
-  <div class="meter-label">Рівень гучності</div>
-  <div class="meter"><div class="meter-fill" id="meter-fill" style="width:0%"></div></div>
-  <div class="threshold-line" id="threshold-display">Поріг: 0.04 (4%)</div>
+  <button id="btn-stop"  onclick="stopVAD()" disabled>■ Стоп</button>
+  <button id="btn-clear" onclick="document.getElementById('log').innerHTML=''">✕ Лог</button>
 </div>
 
 <div class="vad-state idle" id="vad-state">
@@ -103,35 +86,16 @@ button { padding: 10px 20px; border-radius: 8px; border: none; font-family: mono
 </div>
 
 <div class="log" id="log"></div>
+<div id="dialogs"></div>
 
-<div class="dialogs" id="dialogs"></div>
+<script type="module">
+import { MicVAD, utils } from 'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/bundle.min.js';
 
-<script>
-const API = () => document.getElementById('api-url').value.trim();
-const TOKEN = () => document.getElementById('token').value.trim();
-const EMP_ID = () => parseInt(document.getElementById('emp-id').value);
-const MIN_SIZE = () => parseInt(document.getElementById('min-size').value);
+const API = 'https://primary-production-4b93e.up.railway.app/webhook';
 
-let THRESHOLD = 0.04;
-let SILENCE_MS = 2000;
-
-let audioCtx, analyser, micSource, mediaStream;
-let mediaRecorder, audioChunks = [];
-let isRecording = false;
-let silenceTimer = null;
-let vadActive = false;
-
-// Sequential upload queue
+let vad = null;
 let uploadQueue = [];
 let isUploading = false;
-
-function updateSettings() {
-  THRESHOLD = parseFloat(document.getElementById('threshold').value);
-  SILENCE_MS = parseInt(document.getElementById('silence-dur').value);
-  document.getElementById('threshold-val').textContent = THRESHOLD.toFixed(3);
-  document.getElementById('silence-val').textContent = SILENCE_MS + ' мс';
-  document.getElementById('threshold-display').textContent = `Поріг: ${THRESHOLD.toFixed(3)} (${(THRESHOLD*100).toFixed(1)}%)`;
-}
 
 function log(msg, type='info') {
   const el = document.getElementById('log');
@@ -143,129 +107,72 @@ function log(msg, type='info') {
   el.scrollTop = el.scrollHeight;
 }
 
-function clearLog() { document.getElementById('log').innerHTML = ''; }
-
 function setState(state, text) {
   const el = document.getElementById('vad-state');
   el.className = `vad-state ${state}`;
   document.getElementById('vad-state-text').textContent = text;
-  const dot = el.querySelector('.dot');
-  dot.className = 'dot' + (state !== 'idle' ? ' blink' : '');
+  el.querySelector('.dot').className = 'dot' + (state !== 'idle' ? ' blink' : '');
 }
 
-async function startVAD() {
-  if (vadActive) return;
-  log('Запит доступу до мікрофону...', 'blue');
+window.startVAD = async function() {
+  const posThreshold = parseFloat(document.getElementById('pos-threshold').value);
+  const negThreshold = parseFloat(document.getElementById('neg-threshold').value);
+  const minFrames    = parseInt(document.getElementById('min-frames').value);
+  const padFrames    = parseInt(document.getElementById('pad-frames').value);
+
+  log('Завантаження Silero VAD...', 'blue');
+  setState('listening', 'Завантаження...');
+
   try {
-    mediaStream = await navigator.mediaDevices.getUserMedia({
-      audio: { echoCancellation: true, noiseSuppression: true, sampleRate: 16000 }
+    vad = await MicVAD.new({
+      positiveSpeechThreshold: posThreshold,
+      negativeSpeechThreshold: negThreshold,
+      minSpeechFrames:         minFrames,
+      preSpeechPadFrames:      padFrames,
+
+      onSpeechStart: () => {
+        log('▶ Мовлення почалось', 'ok');
+        setState('recording', 'Запис мовлення...');
+      },
+
+      onSpeechEnd: (audio) => {
+        log(`■ Мовлення закінчилось. Фреймів: ${audio.length}`, 'warn');
+        setState('listening', 'Слухаю...');
+        const wavBuffer = utils.encodeWAV(audio);
+        const blob = new Blob([wavBuffer], { type: 'audio/wav' });
+        log(`Файл: ${(blob.size/1024).toFixed(1)}KB`, 'info');
+        enqueueUpload(blob);
+      },
+
+      onVADMisfire: () => {
+        log('~ Помилкове спрацювання (занадто короткий звук)', 'warn');
+        setState('listening', 'Слухаю...');
+      }
     });
-    audioCtx  = new (window.AudioContext || window.webkitAudioContext)();
-    analyser  = audioCtx.createAnalyser();
-    micSource = audioCtx.createMediaStreamSource(mediaStream);
-    analyser.fftSize = 512;
-    analyser.smoothingTimeConstant = 0.3;
-    micSource.connect(analyser);
-    vadActive = true;
-    setState('listening', 'Слухаю...');
-    log('✓ Мікрофон активовано. Говоріть!', 'ok');
-    runVAD();
+
+    vad.start();
+    setState('listening', 'Слухаю мовлення...');
+    log('✓ Silero VAD активовано. Говоріть!', 'ok');
+    document.getElementById('btn-start').disabled = true;
+    document.getElementById('btn-stop').disabled  = false;
+
   } catch(e) {
-    log('✗ Помилка мікрофону: ' + e.message, 'err');
+    log('✗ Помилка: ' + e.message, 'err');
+    setState('idle', 'Помилка');
   }
-}
+};
 
-function stopVAD() {
-  if (!vadActive) return;
-  vadActive = false;
-  if (isRecording) stopRecording(false);
-  if (mediaStream) mediaStream.getTracks().forEach(t => t.stop());
-  if (audioCtx) audioCtx.close();
-  setState('idle', 'Не активний');
+window.stopVAD = function() {
+  if (vad) { vad.pause(); vad = null; }
+  setState('idle', 'Зупинено');
   log('VAD зупинено', 'warn');
-  document.getElementById('meter-fill').style.width = '0%';
-}
+  document.getElementById('btn-start').disabled = false;
+  document.getElementById('btn-stop').disabled  = true;
+};
 
-function runVAD() {
-  if (!vadActive) return;
-  const data = new Uint8Array(analyser.frequencyBinCount);
-  let speaking = false;
-
-  function tick() {
-    if (!vadActive) return;
-    analyser.getByteFrequencyData(data);
-
-    // Voice frequency range: ~300Hz-3400Hz
-    // At 16kHz sample rate, fftSize=512 → binWidth = 16000/512 = 31.25Hz
-    // 300Hz = bin 10, 3400Hz = bin 109
-    const voiceBins = Array.from(data.slice(10, 110));
-    const avg = voiceBins.reduce((a,b) => a+b, 0) / voiceBins.length / 255;
-
-    // Update meter
-    document.getElementById('meter-fill').style.width = Math.min(avg * 400, 100) + '%';
-
-    if (avg > THRESHOLD) {
-      if (!speaking) {
-        speaking = true;
-        log(`↑ Мовлення почалось (рівень: ${avg.toFixed(3)})`, 'ok');
-        startRecording();
-      }
-      if (silenceTimer) { clearTimeout(silenceTimer); silenceTimer = null; }
-    } else {
-      if (speaking && !silenceTimer) {
-        silenceTimer = setTimeout(() => {
-          speaking = false;
-          log(`↓ Тиша ${SILENCE_MS}мс — зупиняю запис (рівень: ${avg.toFixed(3)})`, 'warn');
-          stopRecording(true);
-          silenceTimer = null;
-        }, SILENCE_MS);
-      }
-    }
-    requestAnimationFrame(tick);
-  }
-  tick();
-}
-
-function startRecording() {
-  if (isRecording) return;
-  isRecording = true;
-  audioChunks = [];
-
-  const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-    ? 'audio/webm;codecs=opus'
-    : MediaRecorder.isTypeSupported('audio/webm')
-    ? 'audio/webm'
-    : 'audio/ogg';
-
-  log(`Починаю запис (${mimeType})`, 'blue');
-  mediaRecorder = new MediaRecorder(mediaStream, { mimeType });
-  mediaRecorder.ondataavailable = e => { if(e.data.size > 0) audioChunks.push(e.data); };
-  mediaRecorder.start(200);
-  setState('recording', 'Запис...');
-}
-
-function stopRecording(send) {
-  if (!mediaRecorder || mediaRecorder.state === 'inactive') { isRecording = false; return; }
-  isRecording = false;
-  mediaRecorder.stop();
-  mediaRecorder.onstop = () => {
-    const blob = new Blob(audioChunks, { type: mediaRecorder.mimeType });
-    log(`Файл готовий: ${(blob.size/1024).toFixed(1)}KB, тип: ${blob.type}`, 'info');
-    if (send && blob.size >= MIN_SIZE()) {
-      log(`→ Додаю в чергу відправки`, 'blue');
-      enqueueUpload(blob);
-    } else if (blob.size < MIN_SIZE()) {
-      log(`✕ Файл задалека малий (${blob.size}б < ${MIN_SIZE()}б) — ігноруємо`, 'warn');
-    }
-    audioChunks = [];
-    if (vadActive) setState('listening', 'Слухаю...');
-  };
-}
-
-// Sequential upload queue
 function enqueueUpload(blob) {
   uploadQueue.push(blob);
-  log(`Черга: ${uploadQueue.length} файл(ів)`, 'info');
+  log(`Черга: ${uploadQueue.length}`, 'info');
   processQueue();
 }
 
@@ -273,74 +180,66 @@ async function processQueue() {
   if (isUploading || uploadQueue.length === 0) return;
   isUploading = true;
   const blob = uploadQueue.shift();
-  log(`⬆ Відправляю на сервер (залишилось в черзі: ${uploadQueue.length})`, 'blue');
-  setState('uploading', 'Відправка...');
+  setState('uploading', `Відправка... (черга: ${uploadQueue.length})`);
+  log(`⬆ Відправляю на сервер...`, 'blue');
   try {
     await uploadDialog(blob);
   } catch(e) {
-    log(`✗ Помилка відправки: ${e.message}`, 'err');
+    log('✗ Помилка відправки: ' + e.message, 'err');
   } finally {
     isUploading = false;
-    if (vadActive) setState('listening', 'Слухаю...');
+    setState('listening', 'Слухаю...');
     processQueue();
   }
 }
 
 async function uploadDialog(blob) {
-  if (!TOKEN()) { log('✗ Немає токену!', 'err'); return; }
+  const token = document.getElementById('token').value.trim();
+  const empId = document.getElementById('emp-id').value;
+  if (!token) { log('✗ Немає токену!', 'err'); return; }
 
   const formData = new FormData();
-  formData.append('token',            TOKEN());
-  formData.append('employee_user_id', EMP_ID());
-  formData.append('audio',            blob, 'dialog.webm');
+  formData.append('token',            token);
+  formData.append('employee_user_id', empId);
+  formData.append('audio',            blob, 'dialog.wav');
 
-  const t0  = Date.now();
-  const res  = await fetch(API() + '/pb/dialogs/upload', { method:'POST', body: formData });
+  const t0   = Date.now();
+  const res  = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: formData });
   const data = await res.json();
   const ms   = Date.now() - t0;
 
   if (data.success) {
-    log(`✓ Завантажено за ${ms}мс. Dialog ID: ${data.dialog.dialog_id || data.dialog.id}, Score: ${data.dialog.ai_score}`, 'ok');
-    showDialog(data.dialog);
-
-    // Try to get full details
+    log(`✓ Готово за ${ms}мс. Score: ${data.dialog.ai_score}`, 'ok');
+    // Get full details
+    const dialogId = data.dialog.dialog_id || data.dialog.id;
     try {
-      const dialogId = data.dialog.dialog_id || data.dialog.id;
-      const res2  = await fetch(API() + '/pb/dialogs/get', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: TOKEN(), dialog_id: dialogId }) });
+      const res2  = await fetch(API + '/pb/dialogs/get', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, dialog_id: dialogId }) });
       const data2 = await res2.json();
-      if (data2.success && data2.dialog) {
-        log(`✓ Деталі отримано: score=${data2.dialog.ai_score}`, 'ok');
-        showDialog(data2.dialog);
-      }
-    } catch(e) {}
+      if (data2.success) showDialog(data2.dialog);
+      else showDialog(data.dialog);
+    } catch(e) { showDialog(data.dialog); }
   } else {
-    log(`✗ Сервер відповів помилкою: ${JSON.stringify(data)}`, 'err');
+    log('✗ ' + JSON.stringify(data), 'err');
   }
 }
 
 function showDialog(d) {
-  const score = d.ai_score || 0;
-  const result = d.ai_result || {};
   const id = d.dialog_id || d.id;
-  
-  // Remove old card with same id
-  const old = document.getElementById('dlg-' + id);
-  if (old) old.remove();
-
+  document.getElementById('dlg-' + id)?.remove();
+  const result = d.ai_result || {};
   const div = document.createElement('div');
   div.className = 'dialog-card';
   div.id = 'dlg-' + id;
   div.innerHTML = `
-    <div class="meta">Dialog #${id} · ${new Date(d.recorded_at || Date.now()).toLocaleTimeString()}</div>
-    <div class="score">${score}/100</div>
-    ${result.summary ? `<div class="transcript" style="margin-top:6px;color:#aaa">${result.summary}</div>` : ''}
-    ${result.violations?.length ? `<div class="transcript" style="margin-top:6px;color:#f87171">⚠ ${result.violations.join(', ')}</div>` : ''}
-    ${d.transcript ? `<div class="transcript" style="margin-top:6px;border-top:1px solid #222;padding-top:6px">${d.transcript.slice(0,200)}${d.transcript.length > 200 ? '...' : ''}</div>` : ''}
+    <div class="meta">Dialog #${id} · ${new Date(d.recorded_at||Date.now()).toLocaleTimeString()}</div>
+    <div class="score">${d.ai_score||0}/100</div>
+    ${result.summary ? `<div class="text">${result.summary}</div>` : ''}
+    ${result.violations?.length ? `<div class="text" style="color:#f87171">⚠ ${result.violations.join(' · ')}</div>` : ''}
+    ${result.strengths?.length  ? `<div class="text" style="color:#4ade80">✓ ${result.strengths.join(' · ')}</div>` : ''}
+    ${d.transcript ? `<div class="text" style="border-top:1px solid #222;padding-top:6px;margin-top:6px">${d.transcript.slice(0,300)}</div>` : ''}
   `;
   document.getElementById('dialogs').prepend(div);
 }
-
-updateSettings();
 </script>
 </body>
 </html>
