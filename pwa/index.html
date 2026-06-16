@@ -7,70 +7,72 @@
 <style>
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { font-family: monospace; background: #0f0f12; color: #e0e0e0; padding: 20px; font-size: 13px; }
-h1 { color: #E03C2F; margin-bottom: 16px; font-size: 16px; }
-.controls { display: flex; gap: 10px; margin-bottom: 16px; flex-wrap: wrap; }
+h1 { color: #E03C2F; margin-bottom: 4px; font-size: 16px; }
+.sub { color: #555; font-size: 11px; margin-bottom: 16px; }
+.settings { background: #1a1a1f; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.setting label { font-size: 11px; color: #666; display: block; margin-bottom: 3px; }
+.setting input[type=range] { width: 100%; }
+.setting input[type=text], .setting input[type=number] { background: #222; border: 1px solid #333; border-radius: 6px; padding: 6px 10px; color: #e0e0e0; font-family: monospace; font-size: 12px; outline: none; width: 100%; }
+.val { font-size: 11px; color: #E03C2F; }
+.controls { display: flex; gap: 10px; margin-bottom: 16px; }
 button { padding: 10px 20px; border-radius: 8px; border: none; font-family: monospace; font-size: 13px; cursor: pointer; font-weight: 600; }
 #btn-start { background: #E03C2F; color: #fff; }
 #btn-stop  { background: #333; color: #aaa; }
-#btn-clear { background: #222; color: #666; }
-.settings { background: #1a1a1f; border: 1px solid #2a2a35; border-radius: 8px; padding: 12px; margin-bottom: 16px; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-.setting { display: flex; flex-direction: column; gap: 4px; }
-.setting label { font-size: 11px; color: #666; }
-.setting input { background: #222; border: 1px solid #333; border-radius: 6px; padding: 6px 10px; color: #e0e0e0; font-family: monospace; font-size: 13px; outline: none; }
-.setting input:focus { border-color: #E03C2F; }
-.setting .val { font-size: 11px; color: #E03C2F; }
-.vad-state { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 16px; }
+#btn-clear { background: #1a1a1f; color: #555; }
+.vad-state { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 20px; font-size: 12px; font-weight: 600; margin-bottom: 12px; }
 .vad-state.idle      { background: #222; color: #666; }
+.vad-state.loading   { background: #1a1a2a; color: #a78bfa; }
 .vad-state.listening { background: #1a2a1a; color: #4ade80; }
 .vad-state.recording { background: #2a1a1a; color: #E03C2F; }
 .vad-state.uploading { background: #1a1a2a; color: #60a5fa; }
 .dot { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
-.dot.blink { animation: blink .8s infinite; }
+.blink { animation: blink .8s infinite; }
 @keyframes blink { 0%,100%{opacity:1}50%{opacity:.2} }
-.log { background: #111; border: 1px solid #2a2a35; border-radius: 8px; padding: 10px; height: 300px; overflow-y: auto; margin-bottom: 16px; }
-.log-entry { padding: 3px 0; border-bottom: 1px solid #1a1a1a; line-height: 1.5; }
-.log-entry .ts  { color: #444; margin-right: 8px; }
-.log-entry.info .msg { color: #e0e0e0; }
-.log-entry.ok   .msg { color: #4ade80; }
-.log-entry.warn .msg { color: #fbbf24; }
-.log-entry.err  .msg { color: #f87171; }
-.log-entry.blue .msg { color: #60a5fa; }
+.log { background: #111; border: 1px solid #2a2a35; border-radius: 8px; padding: 10px; height: 280px; overflow-y: auto; margin-bottom: 12px; }
+.entry { padding: 2px 0; border-bottom: 1px solid #181818; line-height: 1.5; }
+.ts { color: #333; margin-right: 6px; }
+.info .msg { color: #ccc; }
+.ok   .msg { color: #4ade80; }
+.warn .msg { color: #fbbf24; }
+.err  .msg { color: #f87171; }
+.blue .msg { color: #60a5fa; }
 .dialog-card { background: #1a1a1f; border: 1px solid #2a2a35; border-radius: 8px; padding: 10px; margin-bottom: 8px; }
-.dialog-card .score { font-size: 20px; font-weight: 700; color: #E03C2F; }
-.dialog-card .meta  { font-size: 11px; color: #555; margin-bottom: 6px; }
-.dialog-card .text  { font-size: 12px; color: #aaa; line-height: 1.5; margin-top: 6px; }
+.d-meta  { font-size: 10px; color: #444; margin-bottom: 4px; }
+.d-score { font-size: 22px; font-weight: 700; color: #E03C2F; }
+.d-text  { font-size: 12px; color: #888; line-height: 1.5; margin-top: 5px; }
 </style>
 </head>
 <body>
 
 <h1>🎙 Plan B — Silero VAD Test</h1>
+<div class="sub">Використовує @ricky0123/vad-web — нейромережа для визначення мовлення</div>
 
 <div class="settings">
+  <div class="setting">
+    <label>positiveSpeechThreshold</label>
+    <input type="range" id="pos" min="0.1" max="0.99" step="0.05" value="0.5" oninput="document.getElementById('posv').textContent=parseFloat(this.value).toFixed(2)">
+    <span class="val" id="posv">0.50</span>
+  </div>
+  <div class="setting">
+    <label>negativeSpeechThreshold</label>
+    <input type="range" id="neg" min="0.05" max="0.9" step="0.05" value="0.35" oninput="document.getElementById('negv').textContent=parseFloat(this.value).toFixed(2)">
+    <span class="val" id="negv">0.35</span>
+  </div>
+  <div class="setting">
+    <label>minSpeechFrames</label>
+    <input type="number" id="minf" value="3" min="1" max="30">
+  </div>
+  <div class="setting">
+    <label>preSpeechPadFrames</label>
+    <input type="number" id="padf" value="1" min="0" max="10">
+  </div>
   <div class="setting">
     <label>Token</label>
     <input type="text" id="token" value="582a1fd3bba882b360419fb61c296cba6a0872297369a431afecd972a6122b7ca751d8fa23f66e4692b1db7f6108e910">
   </div>
   <div class="setting">
     <label>Employee User ID</label>
-    <input type="number" id="emp-id" value="4">
-  </div>
-  <div class="setting">
-    <label>positiveSpeechThreshold (0-1)</label>
-    <input type="range" id="pos-threshold" min="0.1" max="0.99" step="0.05" value="0.5" oninput="document.getElementById('pos-val').textContent=this.value">
-    <span class="val" id="pos-val">0.5</span>
-  </div>
-  <div class="setting">
-    <label>negativeSpeechThreshold (0-1)</label>
-    <input type="range" id="neg-threshold" min="0.05" max="0.9" step="0.05" value="0.35" oninput="document.getElementById('neg-val').textContent=this.value">
-    <span class="val" id="neg-val">0.35</span>
-  </div>
-  <div class="setting">
-    <label>minSpeechFrames</label>
-    <input type="number" id="min-frames" value="3" min="1" max="20">
-  </div>
-  <div class="setting">
-    <label>preSpeechPadFrames</label>
-    <input type="number" id="pad-frames" value="1" min="0" max="10">
+    <input type="number" id="empid" value="4">
   </div>
 </div>
 
@@ -80,99 +82,115 @@ button { padding: 10px 20px; border-radius: 8px; border: none; font-family: mono
   <button id="btn-clear" onclick="document.getElementById('log').innerHTML=''">✕ Лог</button>
 </div>
 
-<div class="vad-state idle" id="vad-state">
-  <div class="dot"></div>
-  <span id="vad-state-text">Не активний</span>
+<div class="vad-state idle" id="state">
+  <div class="dot" id="dot"></div>
+  <span id="state-text">Не активний</span>
 </div>
 
 <div class="log" id="log"></div>
 <div id="dialogs"></div>
 
-<script type="module">
-import { MicVAD, utils } from 'https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.22/dist/bundle.min.js';
+<!-- КРОК 1: onnxruntime-web -->
+<script src="https://cdn.jsdelivr.net/npm/onnxruntime-web@1.22.0/dist/ort.wasm.min.js"></script>
+<!-- КРОК 2: vad-web bundle (глобальний об'єкт vad) -->
+<script src="https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@0.0.29/dist/bundle.min.js"></script>
 
+<script>
 const API = 'https://primary-production-4b93e.up.railway.app/webhook';
+const VAD_VERSION = '0.0.29';
+const ORT_VERSION = '1.22.0';
 
-let vad = null;
+let myvad = null;
 let uploadQueue = [];
 let isUploading = false;
 
 function log(msg, type='info') {
   const el = document.getElementById('log');
-  const ts = new Date().toLocaleTimeString('uk', {hour:'2-digit',minute:'2-digit',second:'2-digit'});
-  const div = document.createElement('div');
-  div.className = `log-entry ${type}`;
-  div.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
-  el.appendChild(div);
+  const ts = new Date().toLocaleTimeString('uk',{hour:'2-digit',minute:'2-digit',second:'2-digit'});
+  const d  = document.createElement('div');
+  d.className = `entry ${type}`;
+  d.innerHTML = `<span class="ts">${ts}</span><span class="msg">${msg}</span>`;
+  el.appendChild(d);
   el.scrollTop = el.scrollHeight;
 }
 
-function setState(state, text) {
-  const el = document.getElementById('vad-state');
-  el.className = `vad-state ${state}`;
-  document.getElementById('vad-state-text').textContent = text;
-  el.querySelector('.dot').className = 'dot' + (state !== 'idle' ? ' blink' : '');
+function setState(s, text) {
+  const el   = document.getElementById('state');
+  const dot  = document.getElementById('dot');
+  el.className  = `vad-state ${s}`;
+  document.getElementById('state-text').textContent = text;
+  dot.className = s !== 'idle' ? 'dot blink' : 'dot';
 }
 
-window.startVAD = async function() {
-  const posThreshold = parseFloat(document.getElementById('pos-threshold').value);
-  const negThreshold = parseFloat(document.getElementById('neg-threshold').value);
-  const minFrames    = parseInt(document.getElementById('min-frames').value);
-  const padFrames    = parseInt(document.getElementById('pad-frames').value);
+async function startVAD() {
+  // Check if vad library loaded
+  if (typeof vad === 'undefined') {
+    log('✗ Бібліотека vad не завантажена! Перевірте інтернет.', 'err');
+    return;
+  }
 
-  log('Завантаження Silero VAD...', 'blue');
-  setState('listening', 'Завантаження...');
+  setState('loading', 'Завантаження моделі...');
+  log('Ініціалізація Silero VAD...', 'blue');
+  log(`CDN: vad-web@${VAD_VERSION} + onnxruntime-web@${ORT_VERSION}`, 'info');
 
   try {
-    vad = await MicVAD.new({
-      positiveSpeechThreshold: posThreshold,
-      negativeSpeechThreshold: negThreshold,
-      minSpeechFrames:         minFrames,
-      preSpeechPadFrames:      padFrames,
+    myvad = await vad.MicVAD.new({
+      positiveSpeechThreshold: parseFloat(document.getElementById('pos').value),
+      negativeSpeechThreshold: parseFloat(document.getElementById('neg').value),
+      minSpeechFrames:         parseInt(document.getElementById('minf').value),
+      preSpeechPadFrames:      parseInt(document.getElementById('padf').value),
+
+      // Обов'язково для CDN підключення
+      onnxWASMBasePath: `https://cdn.jsdelivr.net/npm/onnxruntime-web@${ORT_VERSION}/dist/`,
+      baseAssetPath:    `https://cdn.jsdelivr.net/npm/@ricky0123/vad-web@${VAD_VERSION}/dist/`,
 
       onSpeechStart: () => {
-        log('▶ Мовлення почалось', 'ok');
-        setState('recording', 'Запис мовлення...');
+        log('▶ Мовлення розпочалось', 'ok');
+        setState('recording', 'Записую мовлення...');
       },
 
       onSpeechEnd: (audio) => {
-        log(`■ Мовлення закінчилось. Фреймів: ${audio.length}`, 'warn');
+        const secs = (audio.length / 16000).toFixed(1);
+        log(`■ Мовлення закінчилось. Тривалість: ~${secs}с, фреймів: ${audio.length}`, 'warn');
         setState('listening', 'Слухаю...');
-        const wavBuffer = utils.encodeWAV(audio);
-        const blob = new Blob([wavBuffer], { type: 'audio/wav' });
-        log(`Файл: ${(blob.size/1024).toFixed(1)}KB`, 'info');
+        // Конвертуємо Float32Array → WAV
+        const wav = vad.utils.encodeWAV(audio);
+        const blob = new Blob([wav], { type: 'audio/wav' });
+        log(`Файл: ${(blob.size/1024).toFixed(1)} KB`, 'info');
         enqueueUpload(blob);
       },
 
       onVADMisfire: () => {
-        log('~ Помилкове спрацювання (занадто короткий звук)', 'warn');
+        log('~ Хибне спрацювання (занадто коротко)', 'warn');
         setState('listening', 'Слухаю...');
       }
     });
 
-    vad.start();
+    myvad.start();
     setState('listening', 'Слухаю мовлення...');
-    log('✓ Silero VAD активовано. Говоріть!', 'ok');
+    log('✓ Silero VAD активовано! Говоріть.', 'ok');
     document.getElementById('btn-start').disabled = true;
     document.getElementById('btn-stop').disabled  = false;
 
   } catch(e) {
-    log('✗ Помилка: ' + e.message, 'err');
+    log('✗ Помилка ініціалізації: ' + e.message, 'err');
+    log('Якщо Safari — оновіть до iOS 16.4+', 'warn');
     setState('idle', 'Помилка');
   }
-};
+}
 
-window.stopVAD = function() {
-  if (vad) { vad.pause(); vad = null; }
+function stopVAD() {
+  if (myvad) { myvad.pause(); myvad = null; }
   setState('idle', 'Зупинено');
   log('VAD зупинено', 'warn');
   document.getElementById('btn-start').disabled = false;
   document.getElementById('btn-stop').disabled  = true;
-};
+}
 
+// ── Sequential upload queue ───────────────────────────────────
 function enqueueUpload(blob) {
   uploadQueue.push(blob);
-  log(`Черга: ${uploadQueue.length}`, 'info');
+  log(`Черга відправки: ${uploadQueue.length}`, 'info');
   processQueue();
 }
 
@@ -181,11 +199,10 @@ async function processQueue() {
   isUploading = true;
   const blob = uploadQueue.shift();
   setState('uploading', `Відправка... (черга: ${uploadQueue.length})`);
-  log(`⬆ Відправляю на сервер...`, 'blue');
   try {
     await uploadDialog(blob);
   } catch(e) {
-    log('✗ Помилка відправки: ' + e.message, 'err');
+    log('✗ ' + e.message, 'err');
   } finally {
     isUploading = false;
     setState('listening', 'Слухаю...');
@@ -195,28 +212,32 @@ async function processQueue() {
 
 async function uploadDialog(blob) {
   const token = document.getElementById('token').value.trim();
-  const empId = document.getElementById('emp-id').value;
+  const empId = document.getElementById('empid').value;
   if (!token) { log('✗ Немає токену!', 'err'); return; }
 
-  const formData = new FormData();
-  formData.append('token',            token);
-  formData.append('employee_user_id', empId);
-  formData.append('audio',            blob, 'dialog.wav');
+  log('⬆ Відправляю на сервер...', 'blue');
+  const fd = new FormData();
+  fd.append('token',            token);
+  fd.append('employee_user_id', empId);
+  fd.append('audio',            blob, 'dialog.wav');
 
   const t0   = Date.now();
-  const res  = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: formData });
+  const res  = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: fd });
   const data = await res.json();
   const ms   = Date.now() - t0;
 
   if (data.success) {
-    log(`✓ Готово за ${ms}мс. Score: ${data.dialog.ai_score}`, 'ok');
+    log(`✓ Готово за ${ms}мс | Score: ${data.dialog.ai_score} | ID: ${data.dialog.dialog_id||data.dialog.id}`, 'ok');
     // Get full details
     const dialogId = data.dialog.dialog_id || data.dialog.id;
     try {
-      const res2  = await fetch(API + '/pb/dialogs/get', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token, dialog_id: dialogId }) });
-      const data2 = await res2.json();
-      if (data2.success) showDialog(data2.dialog);
-      else showDialog(data.dialog);
+      const r2 = await fetch(API + '/pb/dialogs/get', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token, dialog_id: dialogId })
+      });
+      const d2 = await r2.json();
+      showDialog(d2.success ? d2.dialog : data.dialog);
     } catch(e) { showDialog(data.dialog); }
   } else {
     log('✗ ' + JSON.stringify(data), 'err');
@@ -225,21 +246,36 @@ async function uploadDialog(blob) {
 
 function showDialog(d) {
   const id = d.dialog_id || d.id;
-  document.getElementById('dlg-' + id)?.remove();
-  const result = d.ai_result || {};
-  const div = document.createElement('div');
-  div.className = 'dialog-card';
-  div.id = 'dlg-' + id;
-  div.innerHTML = `
-    <div class="meta">Dialog #${id} · ${new Date(d.recorded_at||Date.now()).toLocaleTimeString()}</div>
-    <div class="score">${d.ai_score||0}/100</div>
-    ${result.summary ? `<div class="text">${result.summary}</div>` : ''}
-    ${result.violations?.length ? `<div class="text" style="color:#f87171">⚠ ${result.violations.join(' · ')}</div>` : ''}
-    ${result.strengths?.length  ? `<div class="text" style="color:#4ade80">✓ ${result.strengths.join(' · ')}</div>` : ''}
-    ${d.transcript ? `<div class="text" style="border-top:1px solid #222;padding-top:6px;margin-top:6px">${d.transcript.slice(0,300)}</div>` : ''}
+  document.getElementById('dlg-'+id)?.remove();
+  const r = d.ai_result || {};
+  const el = document.createElement('div');
+  el.className = 'dialog-card';
+  el.id = 'dlg-' + id;
+  el.innerHTML = `
+    <div class="d-meta">Dialog #${id} · ${new Date(d.recorded_at||Date.now()).toLocaleTimeString()}</div>
+    <div class="d-score">${d.ai_score||0}/100</div>
+    ${r.summary    ? `<div class="d-text">${r.summary}</div>` : ''}
+    ${r.violations?.length ? `<div class="d-text" style="color:#f87171">⚠ ${r.violations.join(' · ')}</div>` : ''}
+    ${r.strengths?.length  ? `<div class="d-text" style="color:#4ade80">✓ ${r.strengths.join(' · ')}</div>`  : ''}
+    ${d.transcript  ? `<div class="d-text" style="border-top:1px solid #222;padding-top:5px;margin-top:5px">${d.transcript.slice(0,250)}</div>` : ''}
   `;
-  document.getElementById('dialogs').prepend(div);
+  document.getElementById('dialogs').prepend(el);
 }
+
+// Check libraries loaded
+window.addEventListener('load', () => {
+  if (typeof vad === 'undefined') {
+    log('✗ vad-web не завантажено! Можливо проблема з CDN або мережею.', 'err');
+  } else {
+    log('✓ vad-web завантажено', 'ok');
+    log('✓ Готово до роботи. Натисніть Старт.', 'ok');
+  }
+  if (typeof ort === 'undefined') {
+    log('✗ onnxruntime-web не завантажено!', 'err');
+  } else {
+    log('✓ onnxruntime-web завантажено', 'ok');
+  }
+});
 </script>
 </body>
 </html>
