@@ -524,7 +524,7 @@ let state = {
   dialogs: [], currentDialog: null,
   mediaRecorder: null, audioChunks: [],
   isRecording: false, vadActive: false,
-  timerInterval: null, uploadQueue: []
+  timerInterval: null
 };
 
 // ── SCREEN NAVIGATION ─────────────────────────────────────────
@@ -712,8 +712,8 @@ function formatDuration(seconds) {
 
 // ── VAD + RECORDING ───────────────────────────────────────────
 let audioContext, analyser, microphone, silenceTimer, mediaStream;
-const SILENCE_THRESHOLD = 0.015;
-const SILENCE_DURATION  = 1500; // ms до завершення діалогу
+const SILENCE_THRESHOLD = 0.04;
+const SILENCE_DURATION  = 2000; // ms до завершення діалогу
 
 async function startListening() {
   try {
@@ -802,27 +802,22 @@ async function uploadDialog(audioBlob) {
   formData.append('employee_user_id', state.selectedEmployee.user_id);
   formData.append('audio',            audioBlob, 'dialog.webm');
 
-  // Add to queue
-  state.uploadQueue.push(1);
-  updateUploadBadge();
+  const res  = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: formData });
+  const data = await res.json();
 
-  try {
-    const res  = await fetch(API + '/pb/dialogs/upload', { method:'POST', body: formData });
-    const data = await res.json();
-    if (data.success) {
-      // Fetch full dialog details
-      const dialogId = data.dialog.dialog_id || data.dialog.id;
-      const res2  = await fetch(API + "/pb/dialogs/get", { method:"POST", headers:{"Content-Type":"application/json"}, body: JSON.stringify({ token: state.token, dialog_id: dialogId }) });
+  if (data.success) {
+    const dialogId = data.dialog.dialog_id || data.dialog.id;
+    try {
+      const res2  = await fetch(API + '/pb/dialogs/get', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ token: state.token, dialog_id: dialogId }) });
       const data2 = await res2.json();
-      if (data2.success) addDialogToUI(data2.dialog);
-      else               addDialogToUI(data.dialog);
+      if (data2.success && data2.dialog) {
+        addDialogToUI(data2.dialog);
+      } else {
+        addDialogToUI({ ...data.dialog, dialog_id: dialogId, recorded_at: new Date().toISOString() });
+      }
+    } catch(e2) {
+      addDialogToUI({ ...data.dialog, dialog_id: dialogId, recorded_at: new Date().toISOString() });
     }
-  } catch(e) {
-    // Offline — save for later
-    saveOffline(audioBlob);
-  } finally {
-    state.uploadQueue.pop();
-    updateUploadBadge();
   }
 }
 
@@ -888,9 +883,10 @@ function showDialog(id) {
 // ── UPLOAD BADGE ──────────────────────────────────────────────
 function updateUploadBadge() {
   const badge = document.getElementById('upload-badge');
-  if (state.uploadQueue.length > 0) {
+  const total = uploadQueue.length + (isUploading ? 1 : 0);
+  if (total > 0) {
     badge.classList.add('show');
-    document.getElementById('upload-count').textContent = state.uploadQueue.length;
+    document.getElementById('upload-count').textContent = total;
   } else {
     badge.classList.remove('show');
   }
@@ -973,6 +969,11 @@ document.addEventListener('keydown', e => {
 flushOfflineQueue();
 applyTheme();
 applyLang();
+
+// Register service worker
+if ('serviceWorker' in navigator) {
+  navigator.serviceWorker.register('/pwa/sw.js').catch(() => {});
+}
 </script>
 </body>
 </html>
